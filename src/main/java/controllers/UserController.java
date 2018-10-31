@@ -132,4 +132,32 @@ public class UserController {
     // Return user
     return user;
   }
+
+  public static User updateUser(User user) {
+
+    // Write in log that we've reach this step
+    Log.writeLog(UserController.class.getName(), user, "Actually updating a user in DB", 0);
+
+    // Set creation time for user.
+    //user.setCreatedTime(System.currentTimeMillis() / 1000L);
+
+    // Check for DB Connection
+    if (dbCon == null) {
+      dbCon = new DatabaseController();
+    }
+
+    // Insert the user in the DB
+    // TODO: Hash the user password before saving it.
+
+    //The prepared statement is done inside the databasecontroller.
+     dbCon.update(user);
+
+    // Return user
+    return user;
+  }
+
+
+
+
+
 }

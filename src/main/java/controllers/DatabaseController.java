@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import model.User;
 import utils.Config;
 
 public class DatabaseController {
@@ -110,4 +112,61 @@ public class DatabaseController {
     // Return the resultset which at this point will be null
     return result;
   }
+
+   /* public boolean update(String sql) {
+
+        // Check that we have connection
+        if (connection == null)
+            connection = getConnection();
+
+        try {
+            // Build the statement as a prepared statement
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return true;
+            }
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        }
+        return false;
+    }
+*/
+
+    public boolean update(User user) {
+
+        // Check that we have connection
+        if (connection == null)
+            connection = getConnection();
+
+        try {
+
+            PreparedStatement updateUser = connection.prepareStatement("UPDATE user SET " + "first_name = ?, "
+                    + "last_name= ?, " + "password = ?, " + "email = ?, " + "created_at = ? " + "WHERE id = ?");
+
+            updateUser.setString(1, user.getFirstname());
+            updateUser.setString(2, user.getLastname());
+            updateUser.setString(3, user.getPassword());
+            updateUser.setString(4, user.getEmail());
+            updateUser.setLong(5, user.getCreatedTime());
+            updateUser.setInt(6,user.getId());
+
+            int rowsAffected = updateUser.executeUpdate();
+
+            if (rowsAffected == 1) {
+                return true;
+            }
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        }
+        return false;
+    }
+
+
+
+
+
 }

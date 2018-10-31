@@ -3,16 +3,21 @@ package utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import org.bouncycastle.util.encoders.Hex;
 
 public final class Hashing {
 
   // TODO: You should add a salt and make this secure
-  public static String md5(String rawString) {
+  public static String md5(String rawString, byte[] salt) {
     try {
 
       // We load the hashing algoritm we wish to use.
       MessageDigest md = MessageDigest.getInstance("MD5");
+
+      //Add password bytes to digest
+      md.update(salt);
 
       // We convert to byte array
       byte[] byteArray = md.digest(rawString.getBytes());
@@ -36,6 +41,19 @@ public final class Hashing {
 
     return null;
   }
+
+  private static byte[] md5GetSalt() throws NoSuchAlgorithmException, NoSuchProviderException
+  {
+    //Always use a SecureRandom generator
+    SecureRandom sr = SecureRandom.getInstance("SHA1PRNG", "SUN");
+    //Create array for salt
+    byte[] salt = new byte[16];
+    //Get a random salt
+    sr.nextBytes(salt);
+    //return salt
+    return salt;
+  }
+
 
   // TODO: You should add a salt and make this secure
   public static String sha(String rawString) {

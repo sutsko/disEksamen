@@ -3,11 +3,7 @@ package com.cbsexam;
 import com.google.gson.Gson;
 import controllers.UserController;
 import java.util.ArrayList;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import model.User;
@@ -95,10 +91,30 @@ public class UserEndpoints {
     return Response.status(400).entity("Endpoint not implemented yet").build();
   }
 
-  // TODO: Make the system able to update users
-  public Response updateUser(String x) {
 
-    // Return a response with status 200 and JSON as type
-    return Response.status(400).entity("Endpoint not implemented yet").build();
+  // TODO: Make the system able to update users
+  @PUT
+  @Path("/{idUser}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response updateUser(@PathParam("idUser") int idUser, String body) {
+    // Read the json from body and transfer it to a user class
+    User readUserUpdate = new Gson().fromJson(body, User.class);
+
+    // Use the controller to update the user
+    User updateUser = UserController.updateUser(readUserUpdate);
+
+
+    // Get the user back with the added ID and return it to the user
+    String json = new Gson().toJson(updateUser);
+
+    // Return the data to the user
+    if (updateUser != null) {
+      // Return a response with status 200 and JSON as type
+      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+    } else {
+      // Return a response with status 200 and JSON as type
+      return Response.status(400).entity("Endpoint not updated yet").build();
+    }
   }
+
 }
