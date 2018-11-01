@@ -156,7 +156,26 @@ public class UserController {
     return user;
   }
 
+  public static boolean deleteUser(int idUser) {
 
+
+    // Check for DB Connection
+    if (dbCon == null) {
+      dbCon = new DatabaseController();
+    }
+
+    // Build the query for DB
+    String sql = "Delete FROM user where id=" + idUser;
+
+   boolean deleted = dbCon.delete(sql);
+    if (deleted)
+      return true;
+    else {
+      return false;
+    }
+    // Insert the user in the DB
+    // TODO: Hash the user password before saving it.
+  }
 
 
 
