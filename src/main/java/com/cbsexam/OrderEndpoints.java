@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import model.Order;
 import utils.Encryption;
 
-@Path("order")
+@Path("orders")
 public class OrderEndpoints {
 
   /**
