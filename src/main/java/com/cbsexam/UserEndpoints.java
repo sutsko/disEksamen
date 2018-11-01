@@ -100,11 +100,8 @@ public class UserEndpoints {
     boolean deleted = UserController.deleteUser(idUser);
 
     if (deleted) {
-
-      /** Spørg om hvordan man får JSON "Bruger slettet" **/
       // Return a response with status 200 and JSON as type
      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("Bruger slettet").build();
-     // return Response.status(200).type(MediaType.TEXT_PLAIN_TYPE).entity("Bruger slettet").build();
     }else {
       // Return a response with status 200 and JSON as type
       return Response.status(400).entity("Could not delete user").build();

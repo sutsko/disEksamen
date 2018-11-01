@@ -1,10 +1,12 @@
 package controllers;
 
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import model.User;
 import utils.Log;
+import utils.Hashing;
 
 public class UserController {
 
@@ -106,15 +108,20 @@ public class UserController {
       dbCon = new DatabaseController();
     }
 
+
+
     // Insert the user in the DB
-    // TODO: Hash the user password before saving it.
+    // TODO: Hash the user password before saving it. FIX
+    //Based on the users password, we use the hashing utill to hash the password. We use sha. 
+    user.setPassword(Hashing.sha(user.getPassword()));
+
     int userID = dbCon.insert(
         "INSERT INTO user(first_name, last_name, password, email, created_at) VALUES('"
             + user.getFirstname()
             + "', '"
             + user.getLastname()
             + "', '"
-            + user.getPassword()
+            +user.getPassword()
             + "', '"
             + user.getEmail()
             + "', "
