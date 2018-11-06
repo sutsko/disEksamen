@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import model.Product;
 import utils.Log;
 
+
 public class ProductController {
 
   private static DatabaseController dbCon;
@@ -97,7 +98,7 @@ public class ProductController {
       dbCon = new DatabaseController();
     }
 
-    // TODO: Use caching layer.
+    // TODO: Use caching layer. FIX
     String sql = "SELECT * FROM product";
 
     ResultSet rs = dbCon.query(sql);
@@ -129,7 +130,7 @@ public class ProductController {
     Log.writeLog(ProductController.class.getName(), product, "Actually creating a product in DB", 0);
 
     // Set creation time for product.
-    product.setCreatedTime(System.currentTimeMillis() / 1000L);
+    product.setCreatedTime(System.currentTimeMillis());
 
     // Check for DB Connection
     if (dbCon == null) {
@@ -146,11 +147,11 @@ public class ProductController {
             + product.getPrice()
             + "', '"
             + product.getDescription()
-            + "', "
+            + "', '"
             + product.getStock()
-            + "', "
+            + "', '"
             + product.getCreatedTime()
-            + ")");
+            + "')");
 
     if (productID != 0) {
       //Update the productid of the product before returning

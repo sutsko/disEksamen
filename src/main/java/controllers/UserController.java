@@ -112,7 +112,7 @@ public class UserController {
 
     // Insert the user in the DB
     // TODO: Hash the user password before saving it. FIX
-    //Based on the users password, we use the hashing utill to hash the password. We use sha. 
+    //Based on the users password, we use the hashing utill to hash the password. We use sha.
     user.setPassword(Hashing.sha(user.getPassword()));
 
     int userID = dbCon.insert(
@@ -180,8 +180,6 @@ public class UserController {
     else {
       return false;
     }
-    // Insert the user in the DB
-    // TODO: Hash the user password before saving it.
   }
 
 

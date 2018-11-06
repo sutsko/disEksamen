@@ -9,7 +9,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 public final class Hashing {
 
- /** Den her værdi skulle måske gemmes i databasen i stedet for i koden**/
+ /** Den her værdi skulle måske gemmes i configgen i stedet for i koden**/
  private static String salt = "mfwmipf";
 
   // TODO: You should add a salt and make this secure FIX
