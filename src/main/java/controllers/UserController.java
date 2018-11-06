@@ -154,8 +154,8 @@ public class UserController {
     }
 
     // Insert the user in the DB
-    // TODO: Hash the user password before saving it.
-
+    // TODO: Hash the user password before saving it. FIX
+    user.setPassword(Hashing.sha(user.getPassword()));
     //The prepared statement is done inside the databasecontroller.
      dbCon.update(user);
 

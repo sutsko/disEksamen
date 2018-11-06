@@ -19,6 +19,7 @@ public class ProductEndpoints {
 
   ProductCache cache = new ProductCache();
   public static boolean forceUpdate=true;
+
   /**
    * @param idProduct
    * @return Responses
@@ -29,7 +30,7 @@ public class ProductEndpoints {
     // Call our controller-layer in order to get the order from the DB
     Product product = ProductController.getProduct(idProduct);
 
-    // TODO: Add Encryption to JSON
+    // TODO: Add Encryption to JSON FIX
     // We convert the java object to json with GSON library imported in Maven
     String json = new Gson().toJson(product);
     json= Encryption.encryptDecryptXOR(json);
@@ -48,14 +49,14 @@ public class ProductEndpoints {
     System.out.println(forceUpdate);
     ArrayList<Product> products = cache.getProducts(forceUpdate);
 
-    // TODO: Add Encryption to JSON
+    // TODO: Add Encryption to JSON FIX
     // We convert the java object to json with GSON library imported in Maven
     String json = new Gson().toJson(products);
+    //json = Encryption.encryptDecryptXOR(json);
 
 
     /** kommenter noget her **/
     this.forceUpdate = false;
-    System.out.println(forceUpdate);
 
     // Return a response with status 200 and JSON as type
     return Response.status(200).type(MediaType.TEXT_PLAIN_TYPE).entity(json).build();

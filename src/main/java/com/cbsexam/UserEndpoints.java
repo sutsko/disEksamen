@@ -1,5 +1,6 @@
 package com.cbsexam;
 
+import cache.UserCache;
 import com.google.gson.Gson;
 import controllers.UserController;
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ import utils.Log;
 
 @Path("user")
 public class UserEndpoints {
+
+  UserCache userCache = new UserCache();
+  public static boolean forceUpdate=true;
 
   /**
    * @param idUser
@@ -30,8 +34,12 @@ public class UserEndpoints {
     //json = Encryption.encryptDecryptXOR(json);
 
     // Return the user with the status code 200
-    // TODO: What should happen if something breaks down?
-    return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+// TODO: What should happen if something breaks down? FIX
+    //if (user != null) {
+      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+   // } else {
+     // return Response.status(400).entity("this user has not yet been created :-(").build();
+    //}
   }
 
   /** @return Responses */
@@ -43,13 +51,15 @@ public class UserEndpoints {
     Log.writeLog(this.getClass().getName(), this, "Get all users", 0);
 
     // Get a list of users
-    ArrayList<User> users = UserController.getUsers();
+    ArrayList<User> users = userCache.getUsers(forceUpdate);
+
 
     // TODO: Add Encryption to JSON
     // Transfer users to json in order to return it to the user
     String json = new Gson().toJson(users);
     //json = Encryption.encryptDecryptXOR(json);
 
+    this.forceUpdate = false;
     // Return the users with the status code 200
     return Response.status(200).type(MediaType.APPLICATION_JSON).entity(json).build();
   }
@@ -70,6 +80,7 @@ public class UserEndpoints {
 
     // Return the data to the user
     if (createUser != null) {
+      this.forceUpdate = true;
       // Return a response with status 200 and JSON as type
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {
@@ -100,6 +111,7 @@ public class UserEndpoints {
     boolean deleted = UserController.deleteUser(idUser);
 
     if (deleted) {
+      this.forceUpdate = true;
       // Return a response with status 200 and JSON as type
      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("Bruger slettet").build();
     }else {
@@ -127,6 +139,7 @@ public class UserEndpoints {
 
     // Return the data to the user
     if (updateUser != null) {
+      this.forceUpdate = true;
       // Return a response with status 200 and JSON as type
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {
