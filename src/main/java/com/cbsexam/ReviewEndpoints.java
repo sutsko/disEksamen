@@ -24,10 +24,10 @@ public class ReviewEndpoints {
     // Call our controller-layer in order to get the order from the DB
     ArrayList<Review> reviews = ReviewController.searchByTitle(reviewTitle);
 
-    // TODO: Add Encryption to JSON
+    // TODO: Add Encryption to JSON FIX
     // We convert the java object to json with GSON library imported in Maven
     String json = new Gson().toJson(reviews);
-    //json= Encryption.encryptDecryptXOR(json);
+    json= Encryption.encryptDecryptXOR(json);
 
     // Return a response with status 200 and JSON as type
     return Response.status(200).type(MediaType.APPLICATION_JSON).entity(json).build();

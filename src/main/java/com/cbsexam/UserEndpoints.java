@@ -31,15 +31,15 @@ public class UserEndpoints {
     // TODO: Add Encryption to JSON
     // Convert the user object to json in order to return the object
     String json = new Gson().toJson(user);
-    //json = Encryption.encryptDecryptXOR(json);
+    json = Encryption.encryptDecryptXOR(json);
 
     // Return the user with the status code 200
 // TODO: What should happen if something breaks down? FIX
-    //if (user != null) {
+    if (user != null) {
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
-   // } else {
-     // return Response.status(400).entity("this user has not yet been created :-(").build();
-    //}
+   } else {
+     return Response.status(400).entity("this user has not yet been created :-(").build();
+    }
   }
 
   /** @return Responses */
@@ -57,7 +57,7 @@ public class UserEndpoints {
     // TODO: Add Encryption to JSON
     // Transfer users to json in order to return it to the user
     String json = new Gson().toJson(users);
-    //json = Encryption.encryptDecryptXOR(json);
+    json = Encryption.encryptDecryptXOR(json);
 
     this.forceUpdate = false;
     // Return the users with the status code 200
@@ -133,7 +133,6 @@ public class UserEndpoints {
     // Use the controller to update the user
     User updateUser = UserController.updateUser(readUserUpdate);
 
-
     // Get the user back with the added ID and return it to the user
     String json = new Gson().toJson(updateUser);
 
@@ -143,9 +142,9 @@ public class UserEndpoints {
       // Return a response with status 200 and JSON as type
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {
-      // Return a response with status 200 and JSON as type
-      return Response.status(400).entity("Endpoint not updated yet").build();
-    }
-  }
+        // Return a response with status 200 and JSON as type
+        return Response.status(400).entity("Endpoint not updated yet").build();
+        }
+        }
 
-}
+        }

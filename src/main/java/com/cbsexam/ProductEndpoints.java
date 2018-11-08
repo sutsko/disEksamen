@@ -52,7 +52,7 @@ public class ProductEndpoints {
     // TODO: Add Encryption to JSON FIX
     // We convert the java object to json with GSON library imported in Maven
     String json = new Gson().toJson(products);
-    //json = Encryption.encryptDecryptXOR(json);
+    json = Encryption.encryptDecryptXOR(json);
 
 
     /** kommenter noget her **/
