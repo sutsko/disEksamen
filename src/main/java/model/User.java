@@ -26,6 +26,9 @@ public class User {
     this.email = email;
     this.token = token;
   }
+  public User() {
+
+  }
 
   public int getId() {
     return id;

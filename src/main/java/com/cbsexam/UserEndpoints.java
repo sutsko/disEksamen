@@ -10,14 +10,15 @@ import javax.ws.rs.core.Response;
 import model.User;
 import utils.Encryption;
 import utils.Log;
-import utils.Token;
 
 @Path("user")
 public class UserEndpoints {
 
   UserCache userCache = new UserCache();
   /**Kan den her boolean være private?**/
-  public static boolean forceUpdate = true;
+  private boolean forceUpdate = true;
+  private static User currentUser = new User();
+
 
   /**
    * @param idUser
@@ -108,6 +109,7 @@ public class UserEndpoints {
     // Return the user with the status code 200
 
     if (user != null) {
+      currentUser = user;
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {
       return Response.status(400).entity("We could not find the user - please try again").build();
@@ -121,19 +123,25 @@ public class UserEndpoints {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response deleteUser(@PathParam("idUser") int idUser) {
 
-    // Write to log that we are here
-    Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
+    if (currentUser.getToken() != null && currentUser.getId() == idUser){
+      // Write to log that we are here
+      Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
 
-    // Use the ID to delete the user from the database via controller.
-    boolean deleted = UserController.deleteUser(idUser);
+      // Use the ID to delete the user from the database via controller.
+      boolean deleted = UserController.deleteUser(idUser);
 
-    if (deleted) {
-      this.forceUpdate = true;
-      // Return a response with status 200 and JSON as type
-     return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
-    }else {
-      // Return a response with status 200 and JSON as type
-      return Response.status(400).entity("Could not delete user").build();
+      if (deleted) {
+        this.forceUpdate = true;
+        // Return a response with status 200 and JSON as type
+        return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
+      }else {
+        // Return a response with status 200 and JSON as type
+        return Response.status(400).entity("Could not delete user").build();
+      }
+
+    } else {
+      System.out.println("Du er ikke logget ind");
+      return Response.status(400).entity("You are not logged in! Please try to log in first").build();
     }
   }
 
@@ -143,24 +151,32 @@ public class UserEndpoints {
   @Path("/{idUser}")
   @Consumes(MediaType.APPLICATION_JSON)
   /**Funder over hvorfor man ikke behøver en @PathParam ("idUser")**/
-  public Response updateUser(String body) {
-    // Read the json from body and transfer it to a user class
-    User readUserUpdate = new Gson().fromJson(body, User.class);
+  public Response updateUser(String body, @PathParam("idUser") int idUser) {
 
-    // Use the controller to update the user
-    User updateUser = UserController.updateUser(readUserUpdate);
+    if (currentUser.getToken() != null && currentUser.getId() == idUser ){
 
-    // Get the user back with the added ID and return it to the user
-    String json = new Gson().toJson(updateUser);
+      // Read the json from body and transfer it to a user class
+      User readUserUpdate = new Gson().fromJson(body, User.class);
 
-    // Return the data to the user
-    if (updateUser != null) {
-      this.forceUpdate = true;
-      // Return a response with status 200 and JSON as type
-      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
-    } else {
+      // Use the controller to update the user
+      User updateUser = UserController.updateUser(readUserUpdate);
+
+      // Get the user back with the added ID and return it to the user
+      String json = new Gson().toJson(updateUser);
+
+      // Return the data to the user
+      if (updateUser != null) {
+        this.forceUpdate = true;
+        // Return a response with status 200 and JSON as type
+        return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+      } else {
         // Return a response with status 200 and JSON as type
         return Response.status(400).entity("Endpoint not updated yet").build();
+      }
+    } else {
+      // Return a response with status 200 and JSON as type
+      return Response.status(400).entity("You are not logged in").build();
     }
+
   }
 }
