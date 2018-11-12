@@ -11,6 +11,7 @@ public final class Hashing {
 
  /** Den her værdi skulle måske gemmes i configgen i stedet for i koden**/
  private static String salt = "mfwmipf";
+ // TODO: Måske gemme den her et andet sted.
 
   // TODO: You should add a salt and make this secure FIX
   public static String md5(String rawString) {

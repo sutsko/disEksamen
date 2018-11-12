@@ -1,12 +1,14 @@
 package controllers;
 
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import model.User;
 import utils.Log;
 import utils.Hashing;
+import utils.Token;
 
 public class UserController {
 
@@ -83,7 +85,6 @@ public class UserController {
                 rs.getString("last_name"),
                 rs.getString("password"),
                 rs.getString("email"));
-
         // Add element to list
         users.add(user);
       }
@@ -107,10 +108,8 @@ public class UserController {
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
-
-
-
     // Insert the user in the DB
+
     // TODO: Hash the user password before saving it. FIX
     //Based on the users password, we use the hashing utill to hash the password. We use sha.
     user.setPassword(Hashing.sha(user.getPassword()));
@@ -158,6 +157,49 @@ public class UserController {
 
     // Return user
     return user;
+  }
+
+  public static User login(User user) {
+
+    // Write in log that we've reach this step
+    Log.writeLog(UserController.class.getName(), user, "Trying to log on", 0);
+
+    if (dbCon == null) {
+      dbCon = new DatabaseController();
+    }
+
+    user.setPassword(Hashing.sha(user.getPassword()));
+
+    try {
+
+      String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
+
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
+      preparedStatement.setString(1, user.getEmail());
+      preparedStatement.setString(2, user.getPassword());
+
+      ResultSet rs = preparedStatement.executeQuery();
+
+      if (rs.next()) {
+        user =
+                new User(
+                        rs.getInt("id"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("password"),
+                        rs.getString("email"));
+
+       user.setToken(Token.generateToken());
+
+        System.out.println("Logged on");
+        return user;
+      } else {
+        System.out.println("No user found");
+      }
+    } catch (SQLException e) {
+      System.out.println(e.getMessage());
+    }
+    return null;
   }
 
   public static boolean deleteUser(int idUser) {

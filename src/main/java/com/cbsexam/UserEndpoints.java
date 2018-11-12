@@ -10,12 +10,14 @@ import javax.ws.rs.core.Response;
 import model.User;
 import utils.Encryption;
 import utils.Log;
+import utils.Token;
 
 @Path("user")
 public class UserEndpoints {
 
   UserCache userCache = new UserCache();
-  public static boolean forceUpdate=true;
+  /**Kan den her boolean være private?**/
+  public static boolean forceUpdate = true;
 
   /**
    * @param idUser
@@ -28,7 +30,7 @@ public class UserEndpoints {
     // Use the ID to get the user from the controller.
     User user = UserController.getUser(idUser);
 
-    // TODO: Add Encryption to JSON
+    // TODO: Add Encryption to JSON FIX
     // Convert the user object to json in order to return the object
     String json = new Gson().toJson(user);
     json = Encryption.encryptDecryptXOR(json);
@@ -54,7 +56,7 @@ public class UserEndpoints {
     ArrayList<User> users = userCache.getUsers(forceUpdate);
 
 
-    // TODO: Add Encryption to JSON
+    // TODO: Add Encryption to JSON FIX
     // Transfer users to json in order to return it to the user
     String json = new Gson().toJson(users);
     json = Encryption.encryptDecryptXOR(json);
@@ -92,10 +94,25 @@ public class UserEndpoints {
   @POST
   @Path("/login")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response loginUser(String x) {
+  public Response loginUser(String body) {
 
-    // Return a response with status 200 and JSON as type
-    return Response.status(400).entity("Could not create user").build();
+    User userToBe = new Gson().fromJson(body, User.class);
+
+    // Use the email and password to get the user from the controller.
+    User user = UserController.login(userToBe);
+
+    // Convert the user object to json in order to return the object
+    String json = new Gson().toJson(user);
+    json = Encryption.encryptDecryptXOR(json);
+
+    // Return the user with the status code 200
+
+    if (user != null) {
+      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+    } else {
+      return Response.status(400).entity("We could not find the user - please try again").build();
+    }
+
   }
 
   // TODO: Make the system able to delete users FIX
@@ -113,7 +130,7 @@ public class UserEndpoints {
     if (deleted) {
       this.forceUpdate = true;
       // Return a response with status 200 and JSON as type
-     return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("Bruger slettet").build();
+     return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
     }else {
       // Return a response with status 200 and JSON as type
       return Response.status(400).entity("Could not delete user").build();
@@ -144,7 +161,6 @@ public class UserEndpoints {
     } else {
         // Return a response with status 200 and JSON as type
         return Response.status(400).entity("Endpoint not updated yet").build();
-        }
-        }
-
-        }
+    }
+  }
+}
