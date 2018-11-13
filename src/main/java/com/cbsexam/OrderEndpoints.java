@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import model.Order;
 import utils.Encryption;
+import controllers.UserController;
 
 @Path("orders")
 public class OrderEndpoints {

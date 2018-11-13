@@ -8,14 +8,19 @@ import model.LineItem;
 import model.Order;
 import model.User;
 import utils.Log;
+import controllers.UserController;
 
 public class OrderController {
 
   private static DatabaseController dbCon;
+  private static UserController userController;
 
   public OrderController() {
     dbCon = new DatabaseController();
+    userController = new UserController();
   }
+
+
 
   public static Order getOrder(int id) {
 
@@ -24,12 +29,14 @@ public class OrderController {
       dbCon = new DatabaseController();
     }
 
+
     // Build SQL string to query
     String sql = "SELECT * FROM orders where id=" + id;
 
     // Do the query in the database and create an empty object for the results
     ResultSet rs = dbCon.query(sql);
     Order order = null;
+
 
     try {
       if (rs.next()) {

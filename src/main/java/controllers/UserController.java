@@ -13,9 +13,19 @@ import utils.Token;
 public class UserController {
 
   private static DatabaseController dbCon;
+  private static User currentUser;
+  private static ArrayList<User> currentUsersList;
+
+
 
   public UserController() {
     dbCon = new DatabaseController();
+    currentUser = new User();
+    currentUsersList = new ArrayList<User>();
+  }
+
+  public User getCurrentUser() {
+    return currentUser;
   }
 
   public static User getUser(int id) {
@@ -192,6 +202,9 @@ public class UserController {
        user.setToken(Token.generateToken());
 
         System.out.println("Logged on");
+
+        //Kommentar
+        currentUser = user;
         return user;
       } else {
         System.out.println("No user found");
@@ -202,23 +215,36 @@ public class UserController {
     return null;
   }
 
-  public static boolean deleteUser(int idUser) {
+  public static boolean deleteUser(int idUser)
+  {
 
+    try
+   {
+     if (Token.verifyToken(currentUser.getToken()) != null && currentUser.getId() == idUser)
+     {
+       // Check for DB Connection
+       if (dbCon == null)
+       {
+         dbCon = new DatabaseController();
+       }
+       // Build the query for DB
+       String sql = "Delete FROM user where id=" + idUser;
 
-    // Check for DB Connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
+       boolean deleted = dbCon.delete(sql);
 
-    // Build the query for DB
-    String sql = "Delete FROM user where id=" + idUser;
-
-   boolean deleted = dbCon.delete(sql);
-    if (deleted)
-      return true;
-    else {
+       if (deleted)
+       {
+         return true;
+       } else
+         {
+          return false;
+         }
+     }
+   } catch (NullPointerException ne)
+   {
+     ne.printStackTrace();
+   }
       return false;
-    }
   }
 
 

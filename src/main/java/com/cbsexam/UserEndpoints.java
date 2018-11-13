@@ -17,7 +17,9 @@ public class UserEndpoints {
   UserCache userCache = new UserCache();
   /**Kan den her boolean være private?**/
   private boolean forceUpdate = true;
-  private static User currentUser = new User();
+
+
+  private User currentUser = new User();
 
 
   /**
@@ -123,9 +125,8 @@ public class UserEndpoints {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response deleteUser(@PathParam("idUser") int idUser) {
 
-    if (currentUser.getToken() != null && currentUser.getId() == idUser){
       // Write to log that we are here
-      Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
+      Log.writeLog(this.getClass().getName(), this, "Trying to delete a user", 0);
 
       // Use the ID to delete the user from the database via controller.
       boolean deleted = UserController.deleteUser(idUser);
@@ -136,13 +137,9 @@ public class UserEndpoints {
         return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
       }else {
         // Return a response with status 200 and JSON as type
-        return Response.status(400).entity("Could not delete user").build();
+        return Response.status(400).entity("Could not delete user. Your session has expired or you haven't logged in. Log in again.").build();
       }
 
-    } else {
-      System.out.println("Du er ikke logget ind");
-      return Response.status(400).entity("You are not logged in! Please try to log in first").build();
-    }
   }
 
 
