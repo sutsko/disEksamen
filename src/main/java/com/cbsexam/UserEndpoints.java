@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import model.User;
 import utils.Encryption;
 import utils.Log;
+import utils.Token;
 
 @Path("user")
 public class UserEndpoints {
@@ -17,9 +18,10 @@ public class UserEndpoints {
   UserCache userCache = new UserCache();
   /**Kan den her boolean være private?**/
   private boolean forceUpdate = true;
+  private static ArrayList<User> usersOnline = new ArrayList<User>();
 
 
-  private User currentUser = new User();
+  private static User currentUser = new User();
 
 
   /**
@@ -111,7 +113,8 @@ public class UserEndpoints {
     // Return the user with the status code 200
 
     if (user != null) {
-      currentUser = user;
+      usersOnline.add(user);
+      //currentUser = user;
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {
       return Response.status(400).entity("We could not find the user - please try again").build();
@@ -123,22 +126,22 @@ public class UserEndpoints {
   @DELETE
   @Path("/{idUser}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response deleteUser(@PathParam("idUser") int idUser) {
+  public Response deleteUser(@PathParam("idUser") int idUser, String body) {
 
       // Write to log that we are here
       Log.writeLog(this.getClass().getName(), this, "Trying to delete a user", 0);
 
-      // Use the ID to delete the user from the database via controller.
-      boolean deleted = UserController.deleteUser(idUser);
+         // Use the ID to delete the user from the database via controller.
+         boolean deleted = UserController.deleteUser(idUser);
 
-      if (deleted) {
-        this.forceUpdate = true;
-        // Return a response with status 200 and JSON as type
-        return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
-      }else {
-        // Return a response with status 200 and JSON as type
-        return Response.status(400).entity("Could not delete user. Your session has expired or you haven't logged in. Log in again.").build();
-      }
+         if (deleted) {
+           this.forceUpdate = true;
+           // Return a response with status 200 and JSON as type
+           return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
+         } else {
+           // Return a response with status 200 and JSON as type
+           return Response.status(400).entity("Could not delete user. Your session has expired or you haven't logged in. Log in again.").build();
+         }
 
   }
 
@@ -176,4 +179,5 @@ public class UserEndpoints {
     }
 
   }
+
 }

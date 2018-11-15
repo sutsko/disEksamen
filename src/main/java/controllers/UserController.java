@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import com.cbsexam.UserEndpoints;
 import model.User;
 import utils.Log;
 import utils.Hashing;
@@ -218,10 +220,7 @@ public class UserController {
   public static boolean deleteUser(int idUser)
   {
 
-    try
-   {
-     if (Token.verifyToken(currentUser.getToken()) != null && currentUser.getId() == idUser)
-     {
+
        // Check for DB Connection
        if (dbCon == null)
        {
@@ -239,12 +238,7 @@ public class UserController {
          {
           return false;
          }
-     }
-   } catch (NullPointerException ne)
-   {
-     ne.printStackTrace();
-   }
-      return false;
+
   }
 
 

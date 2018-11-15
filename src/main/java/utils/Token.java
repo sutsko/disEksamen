@@ -13,6 +13,17 @@ import java.util.Date;
 
 public final class Token {
 
+
+
+    public String token;
+    public String getToken() {
+        return token;
+    }
+
+    public Token(String token){
+
+    }
+
     private static Date expDate() {
         //Kilde: https://www.owasp.org/index.php/JSON_Web_Token_(JWT)_Cheat_Sheet_for_Java
         Calendar c = Calendar.getInstance();
