@@ -18,11 +18,6 @@ public class UserEndpoints {
   UserCache userCache = new UserCache();
   /**Kan den her boolean være private?**/
   private boolean forceUpdate = true;
-  private static ArrayList<User> usersOnline = new ArrayList<User>();
-
-
-  private static User currentUser = new User();
-
 
   /**
    * @param idUser
@@ -106,16 +101,12 @@ public class UserEndpoints {
     // Use the email and password to get the user from the controller.
     User user = UserController.login(userToBe);
 
-    // Convert the user object to json in order to return the object
-    String json = new Gson().toJson(user);
-    json = Encryption.encryptDecryptXOR(json);
-
-    // Return the user with the status code 200
-
+    // Return the user with the status code 200 if succesful
     if (user != null) {
-      usersOnline.add(user);
-      //currentUser = user;
-      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+      String msg = "Welcome back "+user.getFirstname() + "! You are now logged on and will receive a token - please save" +
+              " it, as you will need it throughout the system. This is your token:\n\n"+user.getToken() + "\n\nShould you" +
+              "loose your token, you can always log in again :D Enjoy!";
+      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(msg).build();
     } else {
       return Response.status(400).entity("We could not find the user - please try again").build();
     }
@@ -128,11 +119,13 @@ public class UserEndpoints {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response deleteUser(@PathParam("idUser") int idUser, String body) {
 
+      Token token = new Gson().fromJson(body, Token.class);
+
       // Write to log that we are here
       Log.writeLog(this.getClass().getName(), this, "Trying to delete a user", 0);
 
          // Use the ID to delete the user from the database via controller.
-         boolean deleted = UserController.deleteUser(idUser);
+         boolean deleted = UserController.deleteUser(idUser, token);
 
          if (deleted) {
            this.forceUpdate = true;
@@ -153,7 +146,6 @@ public class UserEndpoints {
   /**Funder over hvorfor man ikke behøver en @PathParam ("idUser")**/
   public Response updateUser(String body, @PathParam("idUser") int idUser) {
 
-    if (currentUser.getToken() != null && currentUser.getId() == idUser ){
 
       // Read the json from body and transfer it to a user class
       User readUserUpdate = new Gson().fromJson(body, User.class);
@@ -173,10 +165,6 @@ public class UserEndpoints {
         // Return a response with status 200 and JSON as type
         return Response.status(400).entity("Endpoint not updated yet").build();
       }
-    } else {
-      // Return a response with status 200 and JSON as type
-      return Response.status(400).entity("You are not logged in").build();
-    }
 
   }
 

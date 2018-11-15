@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import com.cbsexam.UserEndpoints;
 import model.User;
 import utils.Log;
 import utils.Hashing;
@@ -15,19 +13,10 @@ import utils.Token;
 public class UserController {
 
   private static DatabaseController dbCon;
-  private static User currentUser;
-  private static ArrayList<User> currentUsersList;
-
 
 
   public UserController() {
     dbCon = new DatabaseController();
-    currentUser = new User();
-    currentUsersList = new ArrayList<User>();
-  }
-
-  public User getCurrentUser() {
-    return currentUser;
   }
 
   public static User getUser(int id) {
@@ -201,12 +190,10 @@ public class UserController {
                         rs.getString("password"),
                         rs.getString("email"));
 
-       user.setToken(Token.generateToken());
+       user.setToken(Token.generateToken(user));
 
         System.out.println("Logged on");
 
-        //Kommentar
-        currentUser = user;
         return user;
       } else {
         System.out.println("No user found");
@@ -217,30 +204,22 @@ public class UserController {
     return null;
   }
 
-  public static boolean deleteUser(int idUser)
-  {
+  public static boolean deleteUser(int idUser, Token token) {
 
+    if (Token.verifyToken(token.getToken(), idUser) == true) {
+      // Check for DB Connection
+      if (dbCon == null) {
+        dbCon = new DatabaseController();
+      }
+      // Build the query for DB
+      String sql = "Delete FROM user where id=" + idUser;
 
-       // Check for DB Connection
-       if (dbCon == null)
-       {
-         dbCon = new DatabaseController();
-       }
-       // Build the query for DB
-       String sql = "Delete FROM user where id=" + idUser;
+      boolean deleted = dbCon.delete(sql);
 
-       boolean deleted = dbCon.delete(sql);
-
-       if (deleted)
-       {
-         return true;
-       } else
-         {
-          return false;
-         }
+      return deleted;
+    }
+  return false;
 
   }
-
-
 
 }
