@@ -145,7 +145,7 @@ public class DatabaseController {
         try {
 
             PreparedStatement updateUser = connection.prepareStatement("UPDATE user SET " + "first_name = ?, "
-                    + "last_name= ?, " + "password = ?, " + "email = ?, " + "created_at = ? " + "WHERE id = ?");
+                    + "last_name= ?, " + "password = ?, " + "email = ?, " + "created_at = ? " + "WHERE u_id = ?");
 
             updateUser.setString(1, user.getFirstname());
             updateUser.setString(2, user.getLastname());

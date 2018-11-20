@@ -116,7 +116,7 @@ public class UserEndpoints {
   // TODO: Make the system able to delete users FIX
   @DELETE
   @Path("/{idUser}")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes({MediaType.APPLICATION_JSON})
   public Response deleteUser(@PathParam("idUser") int idUser, String body) {
 
       Token token = new Gson().fromJson(body, Token.class);

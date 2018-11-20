@@ -13,11 +13,10 @@ import controllers.UserController;
 public class OrderController {
 
   private static DatabaseController dbCon;
-  private static UserController userController;
+
 
   public OrderController() {
     dbCon = new DatabaseController();
-    userController = new UserController();
   }
 
 
@@ -31,7 +30,7 @@ public class OrderController {
 
 
     // Build SQL string to query
-    String sql = "SELECT * FROM orders where id=" + id;
+    String sql = "SELECT * FROM orders where o_id=" + id;
 
     // Do the query in the database and create an empty object for the results
     ResultSet rs = dbCon.query(sql);
@@ -43,21 +42,21 @@ public class OrderController {
 
         // Perhaps we could optimize things a bit here and get rid of nested queries.
         User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("id"));
+        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("l_id"));
         Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
         Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
 
         // Create an object instance of order from the database dataa
         order =
             new Order(
-                rs.getInt("id"),
+                rs.getInt("o_id"),
                 user,
                 lineItems,
                 billingAddress,
                 shippingAddress,
                 rs.getFloat("order_total"),
-                rs.getLong("created_at"),
-                rs.getLong("updated_at"));
+                rs.getLong("order_created_at"),
+                rs.getLong("order_updated_at"));
 
         // Returns the build order
         return order;
@@ -93,21 +92,21 @@ public class OrderController {
 
         // Perhaps we could optimize things a bit here and get rid of nested queries.
         User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("id"));
+        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("l_id"));
         Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
         Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
 
         // Create an order from the database data
         Order order =
             new Order(
-                rs.getInt("id"),
+                rs.getInt("o_id"),
                 user,
                 lineItems,
                 billingAddress,
                 shippingAddress,
                 rs.getFloat("order_total"),
-                rs.getLong("created_at"),
-                rs.getLong("updated_at"));
+                rs.getLong("order_created_at"),
+                rs.getLong("order_updated_at"));
 
         // Add order to our list
         orders.add(order);
@@ -123,6 +122,7 @@ public class OrderController {
 
   public static Order createOrder(Order order) {
 
+
     // Write in log that we've reach this step
     Log.writeLog(OrderController.class.getName(), order, "Actually creating a order in DB", 0);
 
@@ -135,47 +135,72 @@ public class OrderController {
       dbCon = new DatabaseController();
     }
 
-    // Save addresses to database and save them back to initial order instance
-    order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
-    order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
+    try {
 
-    // Save the user to the database and save them back to initial order instance
-    order.setCustomer(UserController.createUser(order.getCustomer()));
+      dbCon.getConnection().setAutoCommit(false);
 
-    // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.
+      // Save addresses to database and save them back to initial order instance
+      order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
+      order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
-    // Insert the product in the DB
-    int orderID = dbCon.insert(
-        "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, created_at, updated_at) VALUES("
-            + order.getCustomer().getId()
-            + ", "
-            + order.getBillingAddress().getId()
-            + ", "
-            + order.getShippingAddress().getId()
-            + ", "
-            + order.calculateOrderTotal()
-            + ", "
-            + order.getCreatedAt()
-            + ", "
-            + order.getUpdatedAt()
-            + ")");
+      // Save the user to the database and save them back to initial order instance
+      order.setCustomer(UserController.createUser(order.getCustomer()));
 
-    if (orderID != 0) {
-      //Update the productid of the product before returning
-      order.setId(orderID);
+      // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.
+
+      // Insert the product in the DB
+      int orderID = dbCon.insert(
+              "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
+                      + order.getCustomer().getId()
+                      + ", "
+                      + order.getBillingAddress().getId()
+                      + ", "
+                      + order.getShippingAddress().getId()
+                      + ", "
+                      + order.calculateOrderTotal()
+                      + ", "
+                      + order.getCreatedAt()
+                      + ", "
+                      + order.getUpdatedAt()
+                      + ")");
+
+      if (orderID != 0) {
+        //Update the productid of the product before returning
+        order.setId(orderID);
+      }
+
+      // Create an empty list in order to go trough items and then save them back with ID
+      ArrayList<LineItem> items = new ArrayList<LineItem>();
+
+      // Save line items to database
+      for(LineItem item : order.getLineItems()){
+        item = LineItemController.createLineItem(item, order.getId());
+        items.add(item);
+      }
+
+      order.setLineItems(items);
+
+
+      dbCon.getConnection().commit();
+
+    }catch (SQLException e){
+      e.printStackTrace();
+      //if database connection is closed, it will rollback
+      if (dbCon!=null){
+        try{
+          System.out.print("Transaction will be rolled back");
+          dbCon.getConnection().rollback();
+        }catch(SQLException e1){
+          e.printStackTrace();
+        }
+      }
+    } finally {
+      try {
+        dbCon.getConnection().setAutoCommit(true);
+      } catch (SQLException e2){
+        e2.printStackTrace();
+      }
     }
-
-    // Create an empty list in order to go trough items and then save them back with ID
-    ArrayList<LineItem> items = new ArrayList<LineItem>();
-
-    // Save line items to database
-    for(LineItem item : order.getLineItems()){
-      item = LineItemController.createLineItem(item, order.getId());
-      items.add(item);
-    }
-
-    order.setLineItems(items);
-
     // Return order
     return order;
   }

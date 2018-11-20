@@ -27,7 +27,7 @@ public class UserController {
     }
 
     // Build the query for DB
-    String sql = "SELECT * FROM user where id=" + id;
+    String sql = "SELECT * FROM user where u_id=" + id;
 
     // Actually do the query
     ResultSet rs = dbCon.query(sql);
@@ -38,7 +38,7 @@ public class UserController {
       if (rs.next()) {
         user =
             new User(
-                rs.getInt("id"),
+                rs.getInt("u_id"),
                 rs.getString("first_name"),
                 rs.getString("last_name"),
                 rs.getString("password"),
@@ -81,7 +81,7 @@ public class UserController {
       while (rs.next()) {
         User user =
             new User(
-                rs.getInt("id"),
+                rs.getInt("u_id"),
                 rs.getString("first_name"),
                 rs.getString("last_name"),
                 rs.getString("password"),
@@ -184,7 +184,7 @@ public class UserController {
       if (rs.next()) {
         user =
                 new User(
-                        rs.getInt("id"),
+                        rs.getInt("u_id"),
                         rs.getString("first_name"),
                         rs.getString("last_name"),
                         rs.getString("password"),
@@ -212,7 +212,7 @@ public class UserController {
         dbCon = new DatabaseController();
       }
       // Build the query for DB
-      String sql = "Delete FROM user where id=" + idUser;
+      String sql = "Delete FROM user where u_id=" + idUser;
 
       boolean deleted = dbCon.delete(sql);
 
