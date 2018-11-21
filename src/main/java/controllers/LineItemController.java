@@ -43,7 +43,7 @@ public class LineItemController {
                 rs.getInt("l_id"),
                 product,
                 rs.getInt("quantity"),
-                rs.getFloat("price"));
+                rs.getFloat("l_price"));
 
         // Add it to our list of items and return it
         items.add(lineItem);

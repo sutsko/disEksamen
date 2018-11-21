@@ -47,7 +47,31 @@ public class OrderEndpoints {
   public Response getOrders() {
 
     // Call our controller-layer in order to get the order from the DB
-    ArrayList<Order> orders = orderCache.getOrders(forceUpdate);
+    // ArrayList<Order> orders = OrderController.getOrders();
+
+    ArrayList<Order> orders1 = OrderController.getOrderss();
+
+    // TODO: Add Encryption to JSON FIX
+    // We convert the java object to json with GSON library imported in Maven
+    String json = new Gson().toJson(orders1);
+    //String json = new Gson().toJson(orders);
+    json = Encryption.encryptDecryptXOR(json);
+
+    /** kommenter noget her **/
+    this.forceUpdate = false;
+
+    // Return a response with status 200 and JSON as type
+    return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+  }
+
+  /** @return Responses */
+  @GET
+  @Path("/orders")
+  public Response getOrdersOld() {
+
+    // Call our controller-layer in order to get the order from the DB
+    ArrayList<Order> orders = OrderController.getOrders();
+
 
     // TODO: Add Encryption to JSON FIX
     // We convert the java object to json with GSON library imported in Maven
@@ -58,7 +82,7 @@ public class OrderEndpoints {
     this.forceUpdate = false;
 
     // Return a response with status 200 and JSON as type
-    return Response.status(200).type(MediaType.TEXT_PLAIN_TYPE).entity(json).build();
+    return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
   }
 
   @POST

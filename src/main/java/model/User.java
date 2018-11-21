@@ -26,6 +26,7 @@ public class User {
     this.email = email;
     this.token = token;
   }
+
   public User() {
 
   }

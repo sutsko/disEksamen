@@ -20,6 +20,7 @@ public class LineItem {
     this.price = price;
   }
 
+
   public int getId() {
     return id;
   }

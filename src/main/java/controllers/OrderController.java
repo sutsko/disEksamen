@@ -3,10 +3,8 @@ package controllers;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import model.Address;
-import model.LineItem;
-import model.Order;
-import model.User;
+
+import model.*;
 import utils.Log;
 import controllers.UserController;
 
@@ -42,7 +40,7 @@ public class OrderController {
 
         // Perhaps we could optimize things a bit here and get rid of nested queries.
         User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("l_id"));
+        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("o_id"));
         Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
         Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
 
@@ -90,9 +88,9 @@ public class OrderController {
     try {
       while(rs.next()) {
 
-        // Perhaps we could optimize things a bit here and get rid of nested queries.
+        // Perhaps we could optimize things a bit here and get rid of nested queries. FIX
         User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("l_id"));
+        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("o_id"));
         Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
         Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
 
@@ -112,11 +110,12 @@ public class OrderController {
         orders.add(order);
 
       }
+
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
     }
 
-    // return the orders
+     // return the orders
     return orders;
   }
 
@@ -204,4 +203,267 @@ public class OrderController {
     // Return order
     return order;
   }
+
+
+
+
+
+
+
+  public static ArrayList<Order> getOrderss() {
+
+    if (dbCon == null) {
+      dbCon = new DatabaseController();
+    }
+
+    String sql = "select orders.*, address.*, line_item.*, product.*, user.*\n" +
+            "from address\n" +
+            "left join orders on address.a_id=orders.billing_address_id\n" +
+            "\n" +
+            "left join user on orders.user_id = user.u_id\n" +
+            "\n" +
+            "left join line_item on line_item.order_id = orders.o_id\n" +
+            "\n" +
+            "left join product on product.p_id = line_item.product_id\n" +
+            "\n" +
+            "order by address.a_id\n";
+
+    ResultSet rs = dbCon.query(sql);
+    ArrayList<Order> orders = new ArrayList<Order>();
+
+
+
+    try {
+      while(rs.next()) {
+        User user;
+        LineItem lineItem;
+        Address billingsAddress;
+        Address shippingAddress;
+        Product product;
+        ArrayList <LineItem> lineItemsList = new ArrayList<LineItem>();
+
+
+        if(orders.isEmpty()){
+          user = new User(rs.getInt("u_id"),
+                  rs.getString("first_name"),
+                  rs.getString("last_name"),
+                  rs.getString("password"),
+                  rs.getString("email"));
+
+          product = new Product(rs.getInt("p_id"),
+                  rs.getString("product_name"),
+                  rs.getString("sku"),
+                  rs.getFloat("price"),
+                  rs.getString("description"),
+                  rs.getInt("stock"));
+          //Product(int id, String name, String sku, float price, String description, int stock)
+
+          lineItem = new LineItem(rs.getInt("l_id"),product,
+                  rs.getInt("quantity"),
+                  rs.getFloat("l_price"));
+          lineItemsList.add(lineItem);
+
+
+          billingsAddress = new Address(rs.getInt("a_id"),
+                  rs.getString("name"),
+                  rs.getString("street_address"),
+                  rs.getString("city"),
+                  rs.getString("zipcode")
+                  );
+
+          // Create an order from the database data
+          Order order =
+                  new Order(
+                          rs.getInt("o_id"),
+                          user,
+                          lineItemsList,
+                          billingsAddress,
+                          rs.getFloat("order_total"),
+                          rs.getLong("order_created_at"),
+                          rs.getLong("order_updated_at"));
+
+          orders.add(order);
+
+        } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId()&& rs.getInt("o_id")!=0){
+          product = new Product(rs.getInt("p_id"),
+                  rs.getString("product_name"),
+                  rs.getString("sku"),
+                  rs.getFloat("price"),
+                  rs.getString("description"),
+                  rs.getInt("stock"));
+          //Product(int id, String name, String sku, float price, String description, int stock)
+
+          lineItem = new LineItem(rs.getInt("l_id"),product,
+                  rs.getInt("quantity"),
+                  rs.getFloat("l_price"));
+          lineItemsList.add(lineItem);
+
+          orders.get(orders.size()-1).getLineItems().add(lineItem);
+
+
+        } else if(rs.getInt("o_id")==0){
+
+         shippingAddress = new Address(rs.getInt("a_id"),
+                  rs.getString("name"),
+                  rs.getString("street_address"),
+                  rs.getString("city"),
+                  rs.getString("zipcode")
+          );
+
+         orders.get(orders.size()-1).setShippingAddress(shippingAddress);
+
+        } else{
+
+          user = new User(rs.getInt("u_id"),
+                  rs.getString("first_name"),
+                  rs.getString("last_name"),
+                  rs.getString("password"),
+                  rs.getString("email"));
+
+          product = new Product(rs.getInt("p_id"),
+                  rs.getString("product_name"),
+                  rs.getString("sku"),
+                  rs.getFloat("price"),
+                  rs.getString("description"),
+                  rs.getInt("stock"));
+          //Product(int id, String name, String sku, float price, String description, int stock)
+
+          lineItem = new LineItem(rs.getInt("l_id"),product,
+                  rs.getInt("quantity"),
+                  rs.getFloat("l_price"));
+          lineItemsList.add(lineItem);
+
+
+          billingsAddress = new Address(rs.getInt("a_id"),
+                  rs.getString("name"),
+                  rs.getString("street_address"),
+                  rs.getString("city"),
+                  rs.getString("zipcode")
+          );
+
+          // Create an order from the database data
+          Order order =
+                  new Order(
+                          rs.getInt("o_id"),
+                          user,
+                          lineItemsList,
+                          billingsAddress,
+                          rs.getFloat("order_total"),
+                          rs.getLong("order_created_at"),
+                          rs.getLong("order_updated_at"));
+
+          orders.add(order);
+
+          
+        }
+
+      }
+
+    } catch (SQLException ex) {
+      System.out.println(ex.getMessage());
+    }
+
+    // return the orders
+    return orders;
+  }
+
+
+  public static Order getOrderr(int id) {
+
+    // check for connection
+    if (dbCon == null) {
+      dbCon = new DatabaseController();
+    }
+
+
+    // Build SQL string to query
+    String sql = "select orders.*, address.*, line_item.*, product.*, user.*\n" +
+            "from address\n" +
+            "left join orders on address.a_id=orders.billing_address_id\n" +
+            "\n" +
+            "left join user on orders.user_id = user.u_id\n" +
+            "\n" +
+            "left join line_item on line_item.order_id = orders.o_id\n" +
+            "\n" +
+            "left join product on product.p_id = line_item.product_id\n" +
+            "\n" +
+            "order by address.a_id\n";
+
+    // Do the query in the database and create an empty object for the results
+    ResultSet rs = dbCon.query(sql);
+    Order order = null;
+
+
+    try {
+      while (rs.next()) {
+        System.out.println(rs.getRow());
+        User user;
+        LineItem lineItem;
+        Address billingsAddress;
+        Address shippingAddress;
+        Product product;
+        ArrayList <LineItem> lineItemsList;
+
+
+        if (id==rs.getInt("o_id")){
+
+          if (order==null) {
+            user = new User(rs.getInt("u_id"),
+                    rs.getString("first_name"),
+                    rs.getString("last_name"),
+                    rs.getString("password"),
+                    rs.getString("email"));
+
+            product = new Product(rs.getInt("p_id"),
+                    rs.getString("product_name"),
+                    rs.getString("sku"),
+                    rs.getFloat("price"),
+                    rs.getString("description"),
+                    rs.getInt("stock"));
+
+
+            lineItem = new LineItem(rs.getInt("l_id"), product,
+                    rs.getInt("quantity"),
+                    rs.getFloat("l_price"));
+            lineItemsList = new ArrayList<>();
+            lineItemsList.add(lineItem);
+
+
+            billingsAddress = new Address(rs.getInt("a_id"),
+                    rs.getString("name"),
+                    rs.getString("street_address"),
+                    rs.getString("city"),
+                    rs.getString("zipcode")
+            );
+
+            // Create an order from the database data
+            order = new Order(
+                    rs.getInt("o_id"),
+                    user,
+                    lineItemsList,
+                    billingsAddress,
+                    rs.getFloat("order_total"),
+                    rs.getLong("order_created_at"),
+                    rs.getLong("order_updated_at"));
+          }
+        } else if (order!=null && rs.getInt("a_id")==order.getBillingAddress().getId()+1){
+          shippingAddress = new Address(rs.getInt("a_id"),
+                  rs.getString("name"),
+                  rs.getString("street_address"),
+                  rs.getString("city"),
+                  rs.getString("zipcode")
+          );
+          order.setShippingAddress(shippingAddress);
+          rs.afterLast();
+        }
+      }
+      return order;
+    } catch (SQLException ex) {
+      System.out.println(ex.getMessage());
+    }
+    // Returns null
+    return order;
+  }
+
+
 }
