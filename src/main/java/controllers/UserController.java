@@ -140,24 +140,25 @@ public class UserController {
     return user;
   }
 
-  public static User updateUser(User user) {
+  public static boolean updateUser(User user) {
 
-    // Write in log that we've reach this step
     Log.writeLog(UserController.class.getName(), user, "Actually updating a user in DB", 0);
 
-    // Check for DB Connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
 
-    // Insert the user in the DB
-    // TODO: Hash the user password before saving it. FIX
     user.setPassword(Hashing.sha(user.getPassword()));
-    //The prepared statement is done inside the databasecontroller.
-     dbCon.update(user);
 
-    // Return user
-    return user;
+    boolean affected = dbCon.update(
+            "UPDATE user SET " +
+                    "first_name = " + "'" + user.getFirstname() + "'," +
+                    "last_name = " + "'" + user.getLastname() + "'," +
+                    "password = " + "'" + user.getPassword() + "'," +
+                    "email = " + "'" + user.getEmail() + "'" +
+                    "WHERE u_id = " + "'" + user.getId() + "'");
+
+    return affected;
   }
 
   public static User login(User user) {
@@ -204,9 +205,8 @@ public class UserController {
     return null;
   }
 
-  public static boolean deleteUser(int idUser, Token token) {
+  public static boolean deleteUser(int idUser) {
 
-    if (Token.verifyToken(token.getToken(), idUser) == true) {
       // Check for DB Connection
       if (dbCon == null) {
         dbCon = new DatabaseController();
@@ -217,8 +217,6 @@ public class UserController {
       boolean deleted = dbCon.delete(sql);
 
       return deleted;
-    }
-  return false;
 
   }
 

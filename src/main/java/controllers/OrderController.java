@@ -19,106 +19,6 @@ public class OrderController {
 
 
 
-  public static Order getOrder(int id) {
-
-    // check for connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-
-    // Build SQL string to query
-    String sql = "SELECT * FROM orders where o_id=" + id;
-
-    // Do the query in the database and create an empty object for the results
-    ResultSet rs = dbCon.query(sql);
-    Order order = null;
-
-
-    try {
-      if (rs.next()) {
-
-        // Perhaps we could optimize things a bit here and get rid of nested queries.
-        User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("o_id"));
-        Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
-        Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
-
-        // Create an object instance of order from the database dataa
-        order =
-            new Order(
-                rs.getInt("o_id"),
-                user,
-                lineItems,
-                billingAddress,
-                shippingAddress,
-                rs.getFloat("order_total"),
-                rs.getLong("order_created_at"),
-                rs.getLong("order_updated_at"));
-
-        // Returns the build order
-        return order;
-      } else {
-        System.out.println("No order found");
-      }
-    } catch (SQLException ex) {
-      System.out.println(ex.getMessage());
-    }
-
-    // Returns null
-    return order;
-  }
-
-  /**
-   * Get all orders in database
-   *
-   * @return
-   */
-  public static ArrayList<Order> getOrders() {
-
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-    String sql = "SELECT * FROM orders";
-
-    ResultSet rs = dbCon.query(sql);
-    ArrayList<Order> orders = new ArrayList<Order>();
-
-    try {
-      while(rs.next()) {
-
-        // Perhaps we could optimize things a bit here and get rid of nested queries. FIX
-        User user = UserController.getUser(rs.getInt("user_id"));
-        ArrayList<LineItem> lineItems = LineItemController.getLineItemsForOrder(rs.getInt("o_id"));
-        Address billingAddress = AddressController.getAddress(rs.getInt("billing_address_id"));
-        Address shippingAddress = AddressController.getAddress(rs.getInt("shipping_address_id"));
-
-        // Create an order from the database data
-        Order order =
-            new Order(
-                rs.getInt("o_id"),
-                user,
-                lineItems,
-                billingAddress,
-                shippingAddress,
-                rs.getFloat("order_total"),
-                rs.getLong("order_created_at"),
-                rs.getLong("order_updated_at"));
-
-        // Add order to our list
-        orders.add(order);
-
-      }
-
-    } catch (SQLException ex) {
-      System.out.println(ex.getMessage());
-    }
-
-     // return the orders
-    return orders;
-  }
-
   public static Order createOrder(Order order) {
 
 
@@ -205,12 +105,13 @@ public class OrderController {
   }
 
 
+  /**
+   * Get all orders in database
+   *
+   * @return
+   */
 
-
-
-
-
-  public static ArrayList<Order> getOrderss() {
+  public static ArrayList<Order> getOrders() {
 
     if (dbCon == null) {
       dbCon = new DatabaseController();
@@ -368,7 +269,7 @@ public class OrderController {
   }
 
 
-  public static Order getOrderr(int id) {
+  public static Order getOrder(int id) {
 
     // check for connection
     if (dbCon == null) {
@@ -396,7 +297,6 @@ public class OrderController {
 
     try {
       while (rs.next()) {
-        System.out.println(rs.getRow());
         User user;
         LineItem lineItem;
         Address billingsAddress;

@@ -116,56 +116,56 @@ public class UserEndpoints {
   // TODO: Make the system able to delete users FIX
   @DELETE
   @Path("/{idUser}")
-  @Consumes({MediaType.APPLICATION_JSON})
+  @Consumes(MediaType.APPLICATION_JSON)
   public Response deleteUser(@PathParam("idUser") int idUser, String body) {
 
-      Token token = new Gson().fromJson(body, Token.class);
+    User userToDelete = new Gson().fromJson(body, User.class);
 
-      // Write to log that we are here
-      Log.writeLog(this.getClass().getName(), this, "Trying to delete a user", 0);
+    // Write to log that we are here
+    Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
 
-         // Use the ID to delete the user from the database via controller.
-         boolean deleted = UserController.deleteUser(idUser, token);
-
-         if (deleted) {
-           this.forceUpdate = true;
-           // Return a response with status 200 and JSON as type
-           return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
-         } else {
-           // Return a response with status 200 and JSON as type
-           return Response.status(400).entity("Could not delete user. Your session has expired or you haven't logged in. Log in again.").build();
-         }
-
+    if (Token.verifyToken(userToDelete.getToken(), userToDelete)) {
+      // Use the ID to delete the user from the database via controller.
+      boolean deleted = UserController.deleteUser(idUser);
+      if (deleted) {
+        forceUpdate = true;
+        // Return a response with status 200 and JSON as type
+        /**ændre tekst**/
+        return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity("User deleted").build();
+      } else {
+        // Return a response with status 200 and JSON as type
+        /**ændre tekst**/
+        return Response.status(400).entity("Could not delete user").build();
+      }
+    } else {
+      /**ændre tekst**/
+      return Response.status(401).entity("You're not authorized to do this").build();
+    }
   }
 
 
   // TODO: Make the system able to update users FIX
   @PUT
-  @Path("/{idUser}")
+  @Path("/update/{idUser}")
   @Consumes(MediaType.APPLICATION_JSON)
-  /**Funder over hvorfor man ikke behøver en @PathParam ("idUser")**/
-  public Response updateUser(String body, @PathParam("idUser") int idUser) {
+  public Response updateUser(@PathParam("idUser") int idUser, String body) {
 
+    User userToUpdate = new Gson().fromJson(body, User.class);
 
-      // Read the json from body and transfer it to a user class
-      User readUserUpdate = new Gson().fromJson(body, User.class);
+    Log.writeLog(this.getClass().getName(), this, "Updating a user", 0);
 
-      // Use the controller to update the user
-      User updateUser = UserController.updateUser(readUserUpdate);
-
-      // Get the user back with the added ID and return it to the user
-      String json = new Gson().toJson(updateUser);
-
-      // Return the data to the user
-      if (updateUser != null) {
-        this.forceUpdate = true;
-        // Return a response with status 200 and JSON as type
+    if (Token.verifyToken(userToUpdate.getToken(), userToUpdate)) {
+      boolean affected = UserController.updateUser(userToUpdate);
+      if (affected) {
+        forceUpdate = true;
+        String json = new Gson().toJson(userToUpdate);
         return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
       } else {
-        // Return a response with status 200 and JSON as type
-        return Response.status(400).entity("Endpoint not updated yet").build();
+        return Response.status(400).entity("Could not update user").build();
       }
-
+    } else {
+      return Response.status(401).entity("You're not authorized to do this").build();
+    }
   }
 
 }

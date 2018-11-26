@@ -64,7 +64,6 @@ public class Order {
     this.customer = customer;
     this.lineItems = lineItems;
     this.billingAddress = billingAddress;
-    this.shippingAddress = shippingAddress;
     this.orderTotal = orderTotal;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
