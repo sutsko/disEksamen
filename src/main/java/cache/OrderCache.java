@@ -28,7 +28,6 @@ public class OrderCache {
         if (forceUpdate
                 || ((this.created + this.ttl) <= (System.currentTimeMillis())) || this.orders==null) {
 
-            System.out.println("hej1");
             // Get orders from controller, since we wish to update.
             ArrayList<Order> orders = OrderController.getOrders();
 
@@ -49,7 +48,6 @@ public class OrderCache {
         // Otherwise we look at the age of the cache and figure out if we should update.
         // If the list is empty we also check for new products
         if (forceUpdate) {
-            System.out.println("hej");
 
             order = OrderController.getOrder(orderID);
 

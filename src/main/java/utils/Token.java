@@ -27,6 +27,7 @@ public final class Token {
     public static String generateToken(User user) {
 
         try {
+            /**Den der secret skal gemmes et andet sted**/
             Algorithm algorithm = Algorithm.HMAC256("secret");
             String token = JWT.create()
                     .withIssuer("auth0")

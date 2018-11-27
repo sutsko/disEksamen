@@ -83,58 +83,54 @@ public class DatabaseController {
     return rs;
   }
 
-  public int insert(String sql) {
+    public int insert(String sql) {
 
-    // Set key to 0 as a start
-    int result = 0;
-
-    // Check that we have connection
-    if (connection == null)
-      connection = getConnection();
-
-    try {
-      // Build the statement up in a safe way
-      PreparedStatement statement =
-          connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-      // Execute query
-      result = statement.executeUpdate();
-
-      // Get our key back in order to update the user
-      ResultSet generatedKeys = statement.getGeneratedKeys();
-      if (generatedKeys.next()) {
-        return generatedKeys.getInt(1);
-      }
-    } catch (SQLException e) {
-      System.out.println(e.getMessage());
-    }
-
-    // Return the resultset which at this point will be null
-    return result;
-  }
-
-   /* public boolean update(String sql) {
+        // Set key to 0 as a start
+        int result = 0;
 
         // Check that we have connection
         if (connection == null)
             connection = getConnection();
 
         try {
-            // Build the statement as a prepared statement
-            PreparedStatement stmt = connection.prepareStatement(sql);
 
+            connection.setAutoCommit(false);
 
-            int rowsAffected = stmt.executeUpdate();
+            // Build the statement up in a safe way
+            PreparedStatement statement =
+                    connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-            if (rowsAffected == 1) {
-                return true;
+            // Execute query
+            result = statement.executeUpdate();
+
+            connection.commit();
+
+            // Get our key back in order to update the user
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
             }
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            try {
+                System.out.println("this will be rolled back");
+                connection.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
-        return false;
+        finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Return the resultset which at this point will be null
+        return result;
     }
-*/
+
 
     public boolean update (String sql) {
 
@@ -175,6 +171,7 @@ public class DatabaseController {
         }
         return false;
     }
+
 
 
 
