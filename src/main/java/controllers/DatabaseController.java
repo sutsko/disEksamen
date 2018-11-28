@@ -7,12 +7,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import model.Order;
 import model.User;
 import utils.Config;
 
 public class DatabaseController {
+    
 
-  private static Connection connection;
+    private static Connection connection;
+
+
 
   public DatabaseController() {
     connection = getConnection();
@@ -25,25 +29,27 @@ public class DatabaseController {
    */
   public static Connection getConnection() {
     try {
-      // Set the dataabase connect with the data from the config
-      String url =
-          "jdbc:mysql://"
-              + Config.getDatabaseHost()
-              + ":"
-              + Config.getDatabasePort()
-              + "/"
-              + Config.getDatabaseName()
-              + "?serverTimezone=CET";
 
-      String user = Config.getDatabaseUsername();
-      String password = Config.getDatabasePassword();
+        if (connection == null) {
+            // Set the dataabase connect with the data from the config
+            String url =
+                    "jdbc:mysql://"
+                            + Config.getDatabaseHost()
+                            + ":"
+                            + Config.getDatabasePort()
+                            + "/"
+                            + Config.getDatabaseName()
+                            + "?serverTimezone=CET";
 
-      // Register the driver in order to use it
-      DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+            String user = Config.getDatabaseUsername();
+            String password = Config.getDatabasePassword();
 
-      // create a connection to the database
-      connection = DriverManager.getConnection(url, user, password);
+            // Register the driver in order to use it
+            DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 
+            // create a connection to the database
+            connection = DriverManager.getConnection(url, user, password);
+        }
     } catch (SQLException e) {
       System.out.println(e.getMessage());
     }
@@ -88,46 +94,33 @@ public class DatabaseController {
         // Set key to 0 as a start
         int result = 0;
 
+
         // Check that we have connection
         if (connection == null)
             connection = getConnection();
 
         try {
 
-            connection.setAutoCommit(false);
-
             // Build the statement up in a safe way
             PreparedStatement statement =
                     connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-            // Execute query
+            // Execute update
             result = statement.executeUpdate();
-
-            connection.commit();
 
             // Get our key back in order to update the user
             ResultSet generatedKeys = statement.getGeneratedKeys();
+            System.out.println(generatedKeys);
             if (generatedKeys.next()) {
+                System.out.println(generatedKeys.getInt(1));
                 return generatedKeys.getInt(1);
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            try {
-                System.out.println("this will be rolled back");
-                connection.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-        finally {
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
 
-        // Return the resultset which at this point will be null
+            // Return the resultset which at this point will be null
+            return result;
+        } catch (SQLException e){
+
+        }
         return result;
     }
 
@@ -171,8 +164,6 @@ public class DatabaseController {
         }
         return false;
     }
-
-
 
 
 

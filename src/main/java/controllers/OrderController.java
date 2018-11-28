@@ -7,13 +7,12 @@ import java.util.ArrayList;
 
 import model.*;
 import utils.Log;
-import controllers.UserController;
+
+import javax.validation.constraints.Null;
 
 public class OrderController {
 
   private static DatabaseController dbCon;
-  private static Connection connection;
-
 
   public OrderController() {
     dbCon = new DatabaseController();
@@ -33,54 +32,80 @@ public class OrderController {
     // Check for DB Connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
+
     }
+    try {
+
+      dbCon.getConnection().setAutoCommit(false);
+      System.out.println(dbCon.getConnection().getAutoCommit());
+
+      order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
+      System.out.println(dbCon.getConnection().getAutoCommit());
+      System.out.println(order.getBillingAddress().getId());
+
+      order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
 
-
-    // Setting the user, by getting it based on the id. Users must be created in order to create an order
-    order.setCustomer(UserController.getUser(order.getCustomer().getId()));
-
-    // Save addresses to database and save them back to initial order instance
-    order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
-    order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
+      order.setCustomer(UserController.getUser(order.getCustomer().getId()));
+      // Save addresses to database and save them back to initial order instance
 
 
-    // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.: FIX
+      // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.: FIX
+      // Insert the order in the DB
 
-    // Insert the product in the DB
-    int orderID = dbCon.insert(
-            "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
-                    + order.getCustomer().getId()
-                    + ", "
-                    + order.getBillingAddress().getId()
-                    + ", "
-                    + order.getShippingAddress().getId()
-                    + ", "
-                    + order.calculateOrderTotal()
-                    + ", "
-                    + order.getCreatedAt()
-                    + ", "
-                    + order.getUpdatedAt()
-                    + ")");
 
-    if (orderID != 0) {
-      //Update the productid of the product before returning
-      order.setId(orderID);
+      int orderID = dbCon.insert( "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
+                      + order.getCustomer().getId()
+                      + ", "
+                      + order.getBillingAddress().getId()
+                      + ", "
+                      + order.getShippingAddress().getId()
+                      + ", "
+                      + order.calculateOrderTotal()
+                      + ", "
+                      + order.getCreatedAt()
+                      + ", "
+                      + order.getUpdatedAt()
+                      + ")");
+
+      if (orderID != 0) {
+        //Update the order of the order before returning
+        order.setId(orderID);
+      }
+
+      // Create an empty list in order to go trough items and then save them back with ID
+      ArrayList<LineItem> items = new ArrayList<LineItem>();
+
+      // Save line items to database
+      for(LineItem item : order.getLineItems()){
+        item = LineItemController.createLineItem(item, order.getId());
+        items.add(item);
+      }
+
+      order.setLineItems(items);
+
+      dbCon.getConnection().commit();
+
+      // Return order
+      return order;
+
+    } catch (SQLException | NullPointerException e) {
+      System.out.println(e.getMessage());
+      try {
+        System.out.println("rolling back");
+        dbCon.getConnection().rollback();
+      } catch (SQLException ex) {
+        ex.printStackTrace();
+      }
     }
-
-    // Create an empty list in order to go trough items and then save them back with ID
-    ArrayList<LineItem> items = new ArrayList<LineItem>();
-
-    // Save line items to database
-    for(LineItem item : order.getLineItems()){
-      item = LineItemController.createLineItem(item, order.getId());
-      items.add(item);
+    finally {
+      try {
+        dbCon.getConnection().setAutoCommit(true);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
     }
-
-    order.setLineItems(items);
-
-    // Return order
-    return order;
+    return  null;
   }
 
 
@@ -94,6 +119,8 @@ public class OrderController {
 
     if (dbCon == null) {
       dbCon = new DatabaseController();
+      System.out.println("hej");
+
     }
 
     String sql = "select orders.*, address.*, line_item.*, product.*, user.*\n" +
@@ -343,6 +370,62 @@ public class OrderController {
     // Returns null
     return order;
   }
+
+/**
+  public static Order createOrder(Order order) {
+
+    // Write in log that we've reach this step
+    Log.writeLog(OrderController.class.getName(), order, "Actually creating a order in DB", 0);
+
+    // Set creation and updated time for order.
+    order.setCreatedAt(System.currentTimeMillis() / 1000L);
+    order.setUpdatedAt(System.currentTimeMillis() / 1000L);
+
+    // Save addresses to database and save them back to initial order instance
+    order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
+    order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
+
+    // Setting the user, by getting it based on the id. Users must be created in order to create an order
+    order.setCustomer(UserController.getUser(order.getCustomer().getId()));
+
+    // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.: FIX
+
+    // Insert the product in the DB
+    int orderID = dbCon.insert(
+            "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
+                    + order.getCustomer().getId()
+                    + ", "
+                    + order.getBillingAddress().getId()
+                    + ", "
+                    + order.getShippingAddress().getId()
+                    + ", "
+                    + order.calculateOrderTotal()
+                    + ", "
+                    + order.getCreatedAt()
+                    + ", "
+                    + order.getUpdatedAt()
+                    + ")");
+
+    if (orderID != 0) {
+      //Update the productid of the product before returning
+      order.setId(orderID);
+    }
+
+    // Create an empty list in order to go trough items and then save them back with ID
+    ArrayList<LineItem> items = new ArrayList<LineItem>();
+
+    // Save line items to database
+    for(LineItem item : order.getLineItems()){
+      item = LineItemController.createLineItem(item, order.getId());
+      items.add(item);
+    }
+
+    order.setLineItems(items);
+
+    // Return order
+    return order;
+  }
+ **/
 
 
 }

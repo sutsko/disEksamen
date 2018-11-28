@@ -55,7 +55,7 @@ public class AddressController {
   public static Address createAddress(Address address) {
 
     // Write in log that we've reach this step
-    Log.writeLog(ProductController.class.getName(), address, "Actually creating a line item in DB", 0);
+    Log.writeLog(ProductController.class.getName(), address, "Actually creating an address in DB", 0);
 
     // Check for DB Connection
     if (dbCon == null) {
@@ -75,14 +75,14 @@ public class AddressController {
             + "')");
 
     if (addressID != 0) {
-      //Update the productid of the product before returning
+      //Update the address id of the address before returning
       address.setId(addressID);
     } else{
-      // Return null if product has not been inserted into database
+      // Return null if address has not been inserted into database
       return null;
     }
 
-    // Return product, will be null at this point
+    // Return address, will be null at this point
     return address;
   }
   

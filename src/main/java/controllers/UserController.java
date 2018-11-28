@@ -121,7 +121,7 @@ public class UserController {
             + "', '"
             + user.getLastname()
             + "', '"
-            +user.getPassword()
+            + user.getPassword()
             + "', '"
             + user.getEmail()
             + "', "
