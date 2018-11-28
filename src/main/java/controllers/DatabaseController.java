@@ -12,7 +12,7 @@ import model.User;
 import utils.Config;
 
 public class DatabaseController {
-    
+
 
     private static Connection connection;
 
@@ -110,9 +110,7 @@ public class DatabaseController {
 
             // Get our key back in order to update the user
             ResultSet generatedKeys = statement.getGeneratedKeys();
-            System.out.println(generatedKeys);
             if (generatedKeys.next()) {
-                System.out.println(generatedKeys.getInt(1));
                 return generatedKeys.getInt(1);
             }
 

@@ -37,11 +37,8 @@ public class OrderController {
     try {
 
       dbCon.getConnection().setAutoCommit(false);
-      System.out.println(dbCon.getConnection().getAutoCommit());
 
       order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
-      System.out.println(dbCon.getConnection().getAutoCommit());
-      System.out.println(order.getBillingAddress().getId());
 
       order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
