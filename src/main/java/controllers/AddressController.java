@@ -85,5 +85,21 @@ public class AddressController {
     // Return address, will be null at this point
     return address;
   }
+
+  public static Address formAddress(ResultSet rs) {
+    try {
+      Address address = new Address(rs.getInt("a_id"),
+              rs.getString("name"),
+              rs.getString("street_address"),
+              rs.getString("city"),
+              rs.getString("zipcode")
+      );
+
+      return address;
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
   
 }
