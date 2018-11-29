@@ -17,14 +17,17 @@ public class OrderCache {
     // Sets when the cache has been created
     private static long created;
 
+    //Setting the ttl comes from and is defined in Config.class --> config.json.
     public OrderCache() {
         this.ttl = Config.getOrderTtl();
     }
 
     public ArrayList<Order> getOrders(Boolean forceUpdate) {
-        // If we whis to clear cache, we can set force update.
+        /**If we wish to clear cache, we can set force update.
         // Otherwise we look at the age of the cache and figure out if we should update.
-        // If the list is empty we also check for new products
+        // If the list is empty we also check for new orders
+        // if cache is alright, return cache as arraylist of orders
+         **/
         if (forceUpdate
                 || ((this.created + this.ttl) <= (System.currentTimeMillis())) || this.orders==null) {
 
@@ -44,15 +47,20 @@ public class OrderCache {
     public Order getOrder(boolean forceUpdate, int orderID) {
         Order order = new Order();
 
-        // If we whis to clear cache, we can set force update.
-        // Otherwise we look at the age of the cache and figure out if we should update.
-        // If the list is empty we also check for new products
-        if (forceUpdate) {
+        /**If we wish to clear cache, we can set force update.
+         // Otherwise we look at the age of the cache and figure out if we should get order from database.
+         // If the list is empty we also get the order from the database directly.
+         // If the cache is alright, get the product from the arraylist/cache
+         **/
+        if (forceUpdate
+                || ((this.created + this.ttl) <= (System.currentTimeMillis())) || this.orders==null) {
 
+            // If cache needs update: Using the ordercontroller to get order from database
             order = OrderController.getOrder(orderID);
 
             return order;
         } else {
+            // If the cache is alright, go through arraylist till right ID is found **/
             for (Order o : orders){
                 if (orderID==o.getId())
                     order = o;
