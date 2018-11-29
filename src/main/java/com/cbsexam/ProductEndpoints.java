@@ -83,8 +83,8 @@ public class ProductEndpoints {
 
 
   /** @return Responses
-   * 1. The createProduct() creates a products based on the information provided from client-side
-   * 2. We use the controller to create the product object and save it in the database.
+   * 1. The createProduct() instantiate, initialize and declare a product based on the information provided from client-side
+   * 2. We use the controller to declare the product object and save it in the database.
    * 3. Then the product is converted to Json
    * 4. If we can succesfully return it as confirmation to the user: we build the json. Otherwise we return status 400.
    */

@@ -30,6 +30,7 @@ public class DatabaseController {
   public static Connection getConnection() {
     try {
 
+        //If there aren't a connection we create one - otherwise we return the one we have.
         if (connection == null) {
             // Set the dataabase connect with the data from the config
             String url =
@@ -68,7 +69,6 @@ public class DatabaseController {
     if (connection == null)
       connection = getConnection();
 
-
     // We set the resultset as empty.
     ResultSet rs = null;
 
@@ -89,18 +89,20 @@ public class DatabaseController {
     return rs;
   }
 
+    /**
+     * Do an insert in the database
+     *
+     * @return a key or Null if zero
+     */
     public int insert(String sql) {
-
-        // Set key to 0 as a start
+        // Set result / the key to 0 as a start
         int result = 0;
-
 
         // Check that we have connection
         if (connection == null)
             connection = getConnection();
 
         try {
-
             // Build the statement up in a safe way
             PreparedStatement statement =
                     connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -108,31 +110,36 @@ public class DatabaseController {
             // Execute update
             result = statement.executeUpdate();
 
-            // Get our key back in order to update the user
+            // Get our key back in order to apply it to an object as ID
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 return generatedKeys.getInt(1);
             }
-
-            // Return the resultset which at this point will be null
-            return result;
         } catch (SQLException e){
-
+            e.printStackTrace();
         }
+        // Return the result which at this point will be null
         return result;
     }
 
-
+    /**
+     * Do an update in the database
+     *
+     * @return true if update goes through and false if not
+     */
     public boolean update (String sql) {
 
+      //
         if (connection == null)
             connection = getConnection();
+
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
             int rowaffected = preparedStatement.executeUpdate();
 
-            return rowaffected == 1;
+            if (rowaffected==1)
+                return true;
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -141,6 +148,11 @@ public class DatabaseController {
         return false;
     }
 
+    /**
+     * Do a delete (essentially an update) in the database.
+     * The functionality is the same as with update(), but for the sake of beginner-friendliness they have different names.
+     * @return a ResultSet or Null if Empty
+     */
     public boolean delete(String sql) {
 
         // Check that we have connection

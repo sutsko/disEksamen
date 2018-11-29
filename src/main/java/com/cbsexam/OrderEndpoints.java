@@ -55,7 +55,7 @@ public class OrderEndpoints {
 
   /** @return Responses
    * 1. The getOrders() method checks for orders in the cache
-   * 2. If there are none there/cache needs update, it will contact database and get them there + create a cache
+   * 2. If there are none there/cache needs update, it will contact database and get them there + declare a cache
    * 3. Then the order is converted to Json and encrypted
    * 4. If we can succesfully return it to the user; we build the json, otherwise we return status 404.
    */
@@ -87,8 +87,8 @@ public class OrderEndpoints {
   }
 
   /** @return Responses
-   * 1. The createOrder() creates an order based on the information provided from client-side
-   * 2. We use the controller to create the order and save it in the database.
+   * 1. The createOrder() instantiate, initialize and declare an order based on the information provided from client-side
+   * 2. We use the controller to declare the order and save it in the database.
    * 3. Then the order is converted to Json
    * 4. If we can succesfully return it as confirmation to the user we build the json, otherwise we return status 400.
    */

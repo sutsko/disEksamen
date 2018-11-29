@@ -9,53 +9,22 @@ import utils.Log;
 
 public class LineItemController {
 
+  //For establishing connection with the database later
   private static DatabaseController dbCon;
 
   public LineItemController() {
     dbCon = new DatabaseController();
   }
 
-  public static ArrayList<LineItem> getLineItemsForOrder(int orderID) {
-
-    // Check for DB Connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-    // Construct our SQL
-    String sql = "SELECT * FROM line_item where order_id=" + orderID;
-
-    // Do the query and initialize an empty list for the results
-    ResultSet rs = dbCon.query(sql);
-    ArrayList<LineItem> items = new ArrayList<>();
-
-    try {
-
-      // Loop through the results from the DB
-      while (rs.next()) {
-
-        // Construct a product base on the row data with product_id
-        Product product = ProductController.getProduct(rs.getInt("product_id"));
-
-        // Initialize an instance of the line item object
-        LineItem lineItem =
-            new LineItem(
-                rs.getInt("l_id"),
-                product,
-                rs.getInt("quantity"),
-                rs.getFloat("l_price"));
-
-        // Add it to our list of items and return it
-        items.add(lineItem);
-      }
-    } catch (SQLException ex) {
-      System.out.println(ex.getMessage());
-    }
-
-    // Return the list, which might be empty
-    return items;
-  }
-
+  /**
+   * @param lineItem
+   * @param orderID
+   * @return LineItem
+   * 1. The createLineItem() method takes a LineItem, "connects" it with the order via the orderID and saves it
+   * in the database.
+   * 2. LineItemId will be set to the generated key from the insert to the database.
+   * 3. Returns the new LineItem
+   */
   public static LineItem createLineItem(LineItem lineItem, int orderID) {
 
     // Write in log that we've reach this step
@@ -71,7 +40,7 @@ public class LineItemController {
 
     // Update the ID of the product
 
-    // Insert the product in the DB
+    // Insert the line item in the DB
     int lineItemID = dbCon.insert(
         "INSERT INTO line_item(product_id, order_id, l_price, quantity) VALUES("
             + lineItem.getProduct().getId()
@@ -84,18 +53,22 @@ public class LineItemController {
             + ")");
 
     if (lineItemID != 0) {
-      //Update the productid of the product before returning
+      //Update the line item id of the line item before returning
       lineItem.setId(lineItemID);
-    } else{
+      return lineItem;
 
-      // Return null if product has not been inserted into database
+    } else{
+      // Return null if line item has not been inserted into database
       return null;
     }
-
-    // Return product
-    return lineItem;
   }
-
+  /**
+   * @param rs which is a Resultset
+   * @param product
+   * @return lineitem
+   * 1. The formLineItem() instantiate, initialize and declare an LineItem-object based on information from the resultset
+   * 2. Returns the new address
+   */
 public static LineItem formLineItem (ResultSet rs, Product product) {
     try {
       LineItem lineItem = new LineItem(rs.getInt("l_id"),product,

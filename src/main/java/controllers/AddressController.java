@@ -13,45 +13,13 @@ public class AddressController {
     dbCon = new DatabaseController();
   }
 
-  public static Address getAddress(int id) {
-
-    // Check for DB Connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-    // Our SQL string
-    String sql = "SELECT * FROM address where a_id=" + id;
-
-    // Do the query and set the initial value to null
-    ResultSet rs = dbCon.query(sql);
-    Address address = null;
-
-    try {
-      // Get the first row and build an address object
-      if (rs.next()) {
-        address =
-            new Address(
-                rs.getInt("a_id"),
-                rs.getString("name"),
-                rs.getString("street_address"),
-                rs.getString("city"),
-                rs.getString("zipcode")
-                );
-
-        // Return our newly added object
-        return address;
-      } else {
-        System.out.println("No address found");
-      }
-    } catch (SQLException ex) {
-      System.out.println(ex.getMessage());
-    }
-
-    // Returns null if we can't find anything.
-    return address;
-  }
-
+  /**
+   * @param address
+   * @return address
+   * 1. The createAddress() method takes an address and saves it in the database
+   * 2. AddressId will be set to the generated key from the insert to the database.
+   * 3. Returns the new address
+   */
   public static Address createAddress(Address address) {
 
     // Write in log that we've reach this step
@@ -75,17 +43,22 @@ public class AddressController {
             + "')");
 
     if (addressID != 0) {
-      //Update the address id of the address before returning
+      //Update the address id ofthe address before returning
       address.setId(addressID);
-    } else{
-      // Return null if address has not been inserted into database
-      return null;
+      return address;
     }
 
-    // Return address, will be null at this point
-    return address;
+    // Return null if address has not been inserted into database
+    return null;
+
   }
 
+  /**
+   * @param rs which is a Resultset
+   * @return address
+   * 1. The formAddress() declare and instantiates an Address-object based on information from the resultset
+   * 2. Returns the new address
+   */
   public static Address formAddress(ResultSet rs) {
     try {
       Address address = new Address(rs.getInt("a_id"),
