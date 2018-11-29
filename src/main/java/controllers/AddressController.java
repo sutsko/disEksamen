@@ -62,7 +62,7 @@ public class AddressController {
       dbCon = new DatabaseController();
     }
 
-    // Insert the product in the DB
+    // Insert the address in the DB
     int addressID = dbCon.insert(
         "INSERT INTO address(name, city, zipcode, street_address) VALUES('"
             + address.getName()
