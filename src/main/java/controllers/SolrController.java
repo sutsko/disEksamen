@@ -25,6 +25,7 @@ public final class SolrController {
   public static HttpSolrClient getConnection() {
 
     // Build a URL string with settings from config
+
     String urlString =
         "http://"
             + Config.getSolrHost()
