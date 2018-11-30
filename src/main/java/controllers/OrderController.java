@@ -137,13 +137,13 @@ public class OrderController {
 
       dbCon.getConnection().setAutoCommit(false);
       // Build SQL string to query
-      String sql1 = "select orders.*, address.*, line_item.*, product.*, user.*\n" +
-              "from address\n" +
-              "left join orders on address.a_id=orders.billing_address_id\n" +
-              "left join user on orders.user_id = user.u_id\n" +
-              "left join line_item on line_item.order_id = orders.o_id\n" +
-              "left join product on product.p_id = line_item.product_id\n" +
-              "where orders.o_id="+orderId;
+      String sql1 = "SELECT *" +
+              "FROM address\n" +
+              "LEFT JOIN orders ON address.a_id=orders.billing_address_id\n" +
+              "LEFT JOIN user ON orders.user_id = user.u_id\n" +
+              "LEFT JOIN line_item ON line_item.order_id = orders.o_id\n" +
+              "LEFT JOIN product ON product.p_id = line_item.product_id\n" +
+              "WHERE orders.o_id="+orderId;
 
 
       // Do the query in the database
@@ -174,7 +174,7 @@ public class OrderController {
       }
 
       //Making our second query
-      String sql2 ="select * from address where address.a_id="+(order.getBillingAddress().getId()+1);
+      String sql2 ="SELECT * FROM address WHERE address.a_id="+(order.getBillingAddress().getId()+1);
       ResultSet rs2 = dbCon.query(sql2);
 
       if (rs2.next()){
@@ -212,17 +212,17 @@ public class OrderController {
       dbCon = new DatabaseController();
     }
 
-    String sql = "select orders.*, address.*, line_item.*, product.*, user.*\n" +
-            "from address\n" +
-            "left join orders on address.a_id=orders.billing_address_id\n" +
+    String sql = "SELECT *" +
+            "FROM address\n" +
+            "LEFT JOIN orders ON address.a_id=orders.billing_address_id\n" +
             "\n" +
-            "left join user on orders.user_id = user.u_id\n" +
+            "LEFT JOIN user ON orders.user_id = user.u_id\n" +
             "\n" +
-            "left join line_item on line_item.order_id = orders.o_id\n" +
+            "LEFT JOIN line_item ON line_item.order_id = orders.o_id\n" +
             "\n" +
-            "left join product on product.p_id = line_item.product_id\n" +
+            "LEFT JOIN product ON product.p_id = line_item.product_id\n" +
             "\n" +
-            "order by address.a_id\n";
+            "ORDER BY address.a_id\n";
 
     ResultSet rs = dbCon.query(sql);
     ArrayList<Order> orders = new ArrayList<Order>();

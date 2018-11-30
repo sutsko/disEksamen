@@ -83,10 +83,10 @@ public class ProductEndpoints {
 
 
   /** @return Responses
-   * 1. The createProduct() instantiate, initialize and declare a product based on the information provided from client-side
+   * 1. The createProduct() declare a product based on the information provided from client-side
    * 2. We use the controller to declare the product object and save it in the database.
    * 3. Then the product is converted to Json
-   * 4. If we can succesfully return it as confirmation to the user: we build the json. Otherwise we return status 400.
+   * 4. If we can successfully return it as confirmation to the user: we build the json. Otherwise we return status 400.
    */
   @POST
   @Path("/")
