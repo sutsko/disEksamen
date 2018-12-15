@@ -29,6 +29,7 @@ public class UserEndpoints {
    * 3. Then the user is converted to Json and encrypted
    * 4. If we can successfully return it to the user we build the json, otherwise we return status 404.
    */
+
   @GET
   @Path("/{idUser}")
   public Response getUser(@PathParam("idUser") int idUser) {
@@ -162,7 +163,7 @@ public class UserEndpoints {
 
     //Setting a user from the information - note the changes to userobject - we have added token as a instance variable
     User userToDelete = new Gson().fromJson(body, User.class);
-
+    
     // Write to log that we are here
     Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
 

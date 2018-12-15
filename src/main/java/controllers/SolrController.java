@@ -46,7 +46,7 @@ public final class SolrController {
   /**
    * Do a query in SolR
    *
-   * @return a ResultSet or Null if Empty
+   * @return a doclist or Null if Empty
    */
   public static SolrDocumentList search(String field, String value) {
 

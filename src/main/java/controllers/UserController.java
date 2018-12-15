@@ -102,6 +102,7 @@ public class UserController {
     // Write in log that we've reach this step
     Log.writeLog(UserController.class.getName(), user, "Actually creating a user in DB", 0);
 
+    /** kan man fjerne 100L?**/
     // Set creation time for user.
     user.setCreatedTime(System.currentTimeMillis() / 1000L);
 
@@ -173,6 +174,7 @@ public class UserController {
     user.setPassword(Hashing.sha(user.getPassword()));
 
     try {
+      /** til rapporten - intetn forhindre i at to har samme email og password**/
 
       String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
 
@@ -192,8 +194,6 @@ public class UserController {
                         rs.getString("email"));
 
        user.setToken(Token.generateToken(user));
-
-        System.out.println("Logged on");
 
         return user;
       } else {
