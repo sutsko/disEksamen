@@ -163,7 +163,7 @@ public class UserEndpoints {
 
     //Setting a user from the information - note the changes to userobject - we have added token as a instance variable
     User userToDelete = new Gson().fromJson(body, User.class);
-    
+
     // Write to log that we are here
     Log.writeLog(this.getClass().getName(), this, "Deleting a user", 0);
 

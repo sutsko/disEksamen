@@ -18,6 +18,8 @@ public class DatabaseController {
 
 
 
+
+
   public DatabaseController() {
     connection = getConnection();
   }
@@ -48,7 +50,6 @@ public class DatabaseController {
             // Register the driver in order to use it
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 
-            System.out.println("creating new connection");
             // create a connection to the database
             connection = DriverManager.getConnection(url, user, password);
         }
@@ -115,6 +116,7 @@ public class DatabaseController {
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 return generatedKeys.getInt(1);
+
             }
         } catch (SQLException e){
             e.printStackTrace();

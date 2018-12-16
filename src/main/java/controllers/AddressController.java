@@ -60,13 +60,29 @@ public class AddressController {
    * 1. The formAddress() declare and instantiates an Address-object based on information from the resultset
    * 2. Returns the new address
    */
-  public static Address formAddress(ResultSet rs) {
+  public static Address formBillingAddress(ResultSet rs) {
     try {
-      Address address = new Address(rs.getInt("a_id"),
-              rs.getString("name"),
-              rs.getString("street_address"),
-              rs.getString("city"),
-              rs.getString("zipcode")
+      Address address = new Address(rs.getInt("ba.a_id"),
+              rs.getString("ba.name"),
+              rs.getString("ba.street_address"),
+              rs.getString("ba.city"),
+              rs.getString("ba.zipcode")
+      );
+
+      return address;
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static Address formShippingAddress(ResultSet rs) {
+    try {
+      Address address = new Address(rs.getInt("sa.a_id"),
+              rs.getString("sa.name"),
+              rs.getString("sa.street_address"),
+              rs.getString("sa.city"),
+              rs.getString("sa.zipcode")
       );
 
       return address;

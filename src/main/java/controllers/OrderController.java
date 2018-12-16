@@ -44,8 +44,11 @@ public class OrderController {
     }
 
     try {
+
       //We set the autocommit to false, making the way to use transactions
       dbCon.getConnection().setAutoCommit(false);
+
+
 
 
       //Setting the IDs of billing- and shippingAddress to the order
@@ -54,7 +57,9 @@ public class OrderController {
       order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
       //Setting the ID of the user to the order.
-      order.setCustomer(UserController.getUser(order.getCustomer().getId()));
+   order.setCustomer(UserController.getUser(order.getCustomer().getId()));
+     //order.setCustomer(UserController.createUser(order.getCustomer()));
+
 
 
       if(order.getShippingAddress().getId()==order.getBillingAddress().getId()+1) {
@@ -102,6 +107,7 @@ public class OrderController {
         //If exception was catched, we roll our statements to the database back.
         System.out.println("rolling back");
         dbCon.getConnection().rollback();
+        dbCon = new DatabaseController();
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
@@ -110,12 +116,34 @@ public class OrderController {
       try {
         //Setting the autocommit to true.
         dbCon.getConnection().setAutoCommit(true);
+
       } catch (SQLException e) {
         e.printStackTrace();
       }
     }
     return  null;
   }
+
+
+  public static Order formOrder1(ResultSet rs, User user, ArrayList<LineItem> lineItemsList, Address billingsAddress, Address shippingsAddres) {
+    try {
+      Order order = new Order(
+              rs.getInt("o_id"),
+              user,
+              lineItemsList,
+              billingsAddress,
+              shippingsAddres,
+              rs.getFloat("order_total"),
+              rs.getLong("order_created_at"),
+              rs.getLong("order_updated_at"));
+
+      return order;
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 
   /** @param orderId
    * @return
@@ -127,128 +155,45 @@ public class OrderController {
    * 6. We insert the order based on the things we found out in previuos steps
    */
   public static Order getOrder(int orderId) {
-
-    Order order = null;
-    ArrayList <LineItem> lineItemsList = new ArrayList<>();
-    User user;
-    LineItem lineItem;
-    Address billingsAddress;
-    Product product;
-    Address shippingAddress;
-
     // check for connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
 
-    try {
+    // Build SQL string to query
+    String sql = "SELECT * FROM orders\n" +
+            "inner join\n" +
+            "user ON orders.user_id = user.u_id\n" +
+            "inner join \n" +
+            "line_item ON orders.o_id = line_item.order_id \n" +
+            "inner join \n" +
+            "address AS ba ON orders.billing_address_id = ba.a_id\n" +
+            "inner join \n" +
+            "address as sa ON orders.shipping_address_id = sa.a_id\n" +
+            "inner join \n" +
+            "product ON line_item.product_id  = product.p_id \n" +
+            "where orders.o_id = " + orderId;
 
-      //dbCon.getConnection().setAutoCommit(false);
-      // Build SQL string to query
-      String sql1 = "SELECT *" +
-              "FROM address\n" +
-              "LEFT JOIN orders ON address.a_id=orders.billing_address_id\n" +
-              "LEFT JOIN user ON orders.user_id = user.u_id\n" +
-              "LEFT JOIN line_item ON line_item.order_id = orders.o_id\n" +
-              "LEFT JOIN product ON product.p_id = line_item.product_id\n" +
-              "WHERE orders.o_id="+orderId;
-
-
-      // Do the query in the database
-      ResultSet rs = dbCon.query(sql1);
-
-      while (rs.next()) {
-          if (order==null) {
-
-            user = UserController.formUser(rs);
-
-            product = ProductController.formProduct(rs);
-
-
-            lineItem = LineItemController.formLineItem(rs, product);
-
-            lineItemsList.add(lineItem);
-
-
-            billingsAddress = AddressController.formAddress(rs);
-
-            // Create an order from the database data
-            order = formOrder(rs, user,lineItemsList,billingsAddress);
-          } else{
-              product = ProductController.formProduct(rs);
-              lineItem = LineItemController.formLineItem(rs, product);
-              order.getLineItems().add(lineItem);
-          }
-      }
-
-      //Making our second query
-      String sql2 ="SELECT * FROM address WHERE address.a_id="+(order.getBillingAddress().getId()+1);
-      ResultSet rs2 = dbCon.query(sql2);
-
-      if (rs2.next()){
-        shippingAddress = AddressController.formAddress(rs2);
-        order.setShippingAddress(shippingAddress);
-      }
-
-
-     // dbCon.getConnection().commit();
-      return order;
-    } catch (SQLException | NullPointerException e) {
-      System.out.println(e.getMessage());
-    }/**
-      try {
-        //If exception was catched, we roll our statements to the database back.
-        System.out.println("rolling back");
-        dbCon.getConnection().rollback();
-      } catch (SQLException ex) {
-        ex.printStackTrace();
-      }
-    }finally {
-      try {
-        //Setting the autocommit to true.
-        dbCon.getConnection().setAutoCommit(true);
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    }**/
-    // Returns null
-    return order;
-  }
-
-  public static ArrayList<Order> getOrders() {
-
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-    String sql = "SELECT *" +
-            "FROM address\n" +
-            "LEFT JOIN orders ON address.a_id=orders.billing_address_id\n" +
-            "\n" +
-            "LEFT JOIN user ON orders.user_id = user.u_id\n" +
-            "\n" +
-            "LEFT JOIN line_item ON line_item.order_id = orders.o_id\n" +
-            "\n" +
-            "LEFT JOIN product ON product.p_id = line_item.product_id\n" +
-            "\n" +
-            "ORDER BY address.a_id\n";
-
+    // Do the query in the database and create an empty object for the results
     ResultSet rs = dbCon.query(sql);
-    ArrayList<Order> orders = new ArrayList<Order>();
-
-
+    // New order object
+    Order order = null;
+    // User object
+    User user = null;
+    // New lineitem object
+    LineItem lineItem = null;
+    //New LineitemList
+    ArrayList<LineItem> lineItemsList = new ArrayList<>();
+    Product product = null;
+    // New adress object
+    Address billingAddress = null;
+    // New adress object
+    Address shippingAddress = null;
 
     try {
-      while(rs.next()) {
-        User user;
-        LineItem lineItem;
-        Address billingsAddress;
-        Address shippingAddress;
-        Product product;
-        ArrayList <LineItem> lineItemsList = new ArrayList<LineItem>();
+      while (rs.next()) {
 
-
-        if(orders.isEmpty()){
+        if (order == null) {
 
           user = UserController.formUser(rs);
 
@@ -258,81 +203,124 @@ public class OrderController {
 
           lineItemsList.add(lineItem);
 
-          billingsAddress = AddressController.formAddress(rs);
+          // Creating new billingAddress
+          billingAddress = AddressController.formBillingAddress(rs);
 
-          // Create an order from the database data
-          Order order = formOrder(rs, user,lineItemsList,billingsAddress);
+          // Creating new Shippingaddress
+          shippingAddress = AddressController.formShippingAddress(rs);
 
-          orders.add(order);
+          order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
 
-          /**This if-statement will add products to existing order:
-           * If the next line in the resultset where orderId (o_id) is
-          the same as the previous line which was saved as an order and added to the arraylist
-           **/
-        } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId() && rs.getInt("o_id")!=0){
+        }else {
+          product = ProductController.formProduct(rs);
+          lineItem = LineItemController.formLineItem(rs, product);
+          order.getLineItems().add(lineItem);
+        }
+      }
+      // Returns the build order
+      return order;
+
+    } catch (SQLException ex) {
+      System.out.println(ex.getMessage());
+    }
+    return null;
+  }
+
+
+   public static ArrayList<Order> getOrders() {
+     // check for connection
+     if (dbCon == null) {
+       dbCon = new DatabaseController();
+     }
+     // Orders instead of order in sql statement
+
+
+     String sql = "SELECT * FROM orders\n" +
+             "             inner join\n" +
+             "             user ON orders.user_id = user.u_id\n" +
+             "             inner join \n" +
+             "             line_item ON orders.o_id = line_item.order_id \n" +
+             "             inner join \n" +
+             "             address AS ba ON orders.billing_address_id = ba.a_id\n" +
+             "             inner join \n" +
+             "             address as sa ON orders.shipping_address_id = sa.a_id\n" +
+             "             inner join \n" +
+             "             product ON line_item.product_id  = product.p_id\n" +
+             "             order by orders.o_id";
+
+     ArrayList<Order> orders = new ArrayList<Order>();
+     // Do the query in the database and create an empty object for the results
+     ResultSet rs = dbCon.query(sql);
+     // New order object
+    // Order order = null;
+
+
+
+
+
+
+
+     try {
+       while(rs.next()) {
+
+         // User object
+         User user = null;
+         // New lineitem object
+         LineItem lineItem = null;
+         // New adress object
+         Address billingAddress = null;
+         // New adress object
+         Address shippingAddress = null;
+
+         Product product = null;
+
+         //New LineitemList
+         ArrayList<LineItem> lineItemsList = new ArrayList<>();
+
+        if (orders.isEmpty() || rs.getInt("o_id") != orders.get(orders.size()-1).getId()) {
+
+
+          // Creating new user object
+          user = UserController.formUser(rs);
 
           product = ProductController.formProduct(rs);
 
+          lineItem = LineItemController.formLineItem(rs, product);
+
+          lineItemsList.add(lineItem);
+
+          // Creating new billingAddress
+          billingAddress = AddressController.formBillingAddress(rs);
+          // Creating new shippingAddress
+          shippingAddress = AddressController.formShippingAddress(rs);
+
+          // Creating new order
+         Order order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
+
+          // Adding order to arraylist
+          orders.add(order);
+        } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId()){
+          product = ProductController.formProduct(rs);
 
           lineItem = LineItemController.formLineItem(rs, product);
           lineItemsList.add(lineItem);
 
           orders.get(orders.size()-1).getLineItems().add(lineItem);
 
-          //In our generated resultset and due to the way it looks, if the o_id = null, it means that this line in
-          //the cursor in resultset is where the shippingaddress to the order in the line above is.
-        } else if(rs.getInt("o_id")==0&&rs.getInt("a_id")==orders.get(orders.size()-1).getBillingAddress().getId()+1){
-
-          shippingAddress = AddressController.formAddress(rs);
-
-          orders.get(orders.size()-1).setShippingAddress(shippingAddress);
-
-
-        } else if (rs.getInt("o_id")!=0){
-
-          user = UserController.formUser(rs);
-
-          product = ProductController.formProduct(rs);
-
-
-          lineItem =  LineItemController.formLineItem(rs, product);
-          lineItemsList.add(lineItem);
-
-
-          billingsAddress = AddressController.formAddress(rs);
-
-          // Create an order from the database data
-          Order order = formOrder(rs, user,lineItemsList,billingsAddress);
-          //
-          orders.add(order);
         }
 
-      }
+       }
+       return orders;
+     } catch (SQLException ex) {
+       System.out.println(ex.getMessage());
+     }
 
-    } catch (SQLException  | ArrayIndexOutOfBoundsException ex) {
-      System.out.println(ex.getMessage());
-    }
+     // return the orders
+     return orders;
 
-    // return the orders
-    return orders;
-  }
+   }
 
-  public static Order formOrder(ResultSet rs, User user, ArrayList<LineItem> lineItemsList, Address billingsAddress) {
-    try {
-      Order order = new Order(
-              rs.getInt("o_id"),
-              user,
-              lineItemsList,
-              billingsAddress,
-              rs.getFloat("order_total"),
-              rs.getLong("order_created_at"),
-              rs.getLong("order_updated_at"));
 
-      return order;
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+
 
 }
