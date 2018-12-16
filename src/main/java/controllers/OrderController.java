@@ -1,12 +1,14 @@
 package controllers;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import model.*;
 import utils.Log;
 
 
 public class OrderController {
+
 
   //For establishing a connection with the database later
   private static DatabaseController dbCon;
@@ -27,6 +29,7 @@ public class OrderController {
    */
   public static Order createOrder(Order order) {
 
+
     // Write in log that we've reach this step
     Log.writeLog(OrderController.class.getName(), order, "Actually creating a order in DB", 0);
 
@@ -39,9 +42,11 @@ public class OrderController {
       dbCon = new DatabaseController();
 
     }
+
     try {
       //We set the autocommit to false, making the way to use transactions
       dbCon.getConnection().setAutoCommit(false);
+
 
       //Setting the IDs of billing- and shippingAddress to the order
       //in other word: Save addresses to database and save them back to initial order instance
@@ -51,41 +56,44 @@ public class OrderController {
       //Setting the ID of the user to the order.
       order.setCustomer(UserController.getUser(order.getCustomer().getId()));
 
-      // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts: FIX
-      // Insert the order in the DB
-      int orderID = dbCon.insert( "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
-                      + order.getCustomer().getId()
-                      + ", "
-                      + order.getBillingAddress().getId()
-                      + ", "
-                      + order.getShippingAddress().getId()
-                      + ", "
-                      + order.calculateOrderTotal()
-                      + ", "
-                      + order.getCreatedAt()
-                      + ", "
-                      + order.getUpdatedAt()
-                      + ")");
 
-      if (orderID != 0) {
-        //Update the order of the order before returning further down
-        order.setId(orderID);
+      if(order.getShippingAddress().getId()==order.getBillingAddress().getId()+1) {
+
+        // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts: FIX
+        // Insert the order in the DB
+        int orderID = dbCon.insert("INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
+                + order.getCustomer().getId()
+                + ", "
+                + order.getBillingAddress().getId()
+                + ", "
+                + order.getShippingAddress().getId()
+                + ", "
+                + order.calculateOrderTotal()
+                + ", "
+                + order.getCreatedAt()
+                + ", "
+                + order.getUpdatedAt()
+                + ")");
+
+        if (orderID != 0) {
+          //Update the order of the order before returning further down
+          order.setId(orderID);
+        }
+
+        // Create an empty list in order to go trough items and then save them back with ID
+        ArrayList<LineItem> items = new ArrayList<LineItem>();
+
+        // Save line items to database with the respective order id
+        for (LineItem item : order.getLineItems()) {
+          item = LineItemController.createLineItem(item, order.getId());
+          items.add(item);
+        }
+
+        //Add line items to the order, commit and return the order
+        order.setLineItems(items);
+        dbCon.getConnection().commit();
+        return order;
       }
-
-      // Create an empty list in order to go trough items and then save them back with ID
-      ArrayList<LineItem> items = new ArrayList<LineItem>();
-
-      // Save line items to database with the respective order id
-      for(LineItem item : order.getLineItems()){
-        item = LineItemController.createLineItem(item, order.getId());
-        items.add(item);
-      }
-
-      //Add line items to the order, commit and return the order
-      order.setLineItems(items);
-      dbCon.getConnection().commit();
-      return order;
-
       // adding nullpointerexception, since we are using getUser() instead of createUser() - we would like people to be
       // logged in before they create an order - like Amazon.
     } catch (SQLException | NullPointerException e) {
@@ -135,7 +143,7 @@ public class OrderController {
 
     try {
 
-      dbCon.getConnection().setAutoCommit(false);
+      //dbCon.getConnection().setAutoCommit(false);
       // Build SQL string to query
       String sql1 = "SELECT *" +
               "FROM address\n" +
@@ -183,10 +191,11 @@ public class OrderController {
       }
 
 
-      dbCon.getConnection().commit();
+     // dbCon.getConnection().commit();
       return order;
     } catch (SQLException | NullPointerException e) {
       System.out.println(e.getMessage());
+    }/**
       try {
         //If exception was catched, we roll our statements to the database back.
         System.out.println("rolling back");
@@ -201,7 +210,7 @@ public class OrderController {
       } catch (SQLException e) {
         e.printStackTrace();
       }
-    }
+    }**/
     // Returns null
     return order;
   }
@@ -272,14 +281,14 @@ public class OrderController {
 
           //In our generated resultset and due to the way it looks, if the o_id = null, it means that this line in
           //the cursor in resultset is where the shippingaddress to the order in the line above is.
-        } else if(rs.getInt("o_id")==0){
+        } else if(rs.getInt("o_id")==0&&rs.getInt("a_id")==orders.get(orders.size()-1).getBillingAddress().getId()+1){
 
           shippingAddress = AddressController.formAddress(rs);
 
           orders.get(orders.size()-1).setShippingAddress(shippingAddress);
 
 
-        } else{
+        } else if (rs.getInt("o_id")!=0){
 
           user = UserController.formUser(rs);
 
