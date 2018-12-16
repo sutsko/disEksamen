@@ -19,7 +19,7 @@ public class UserEndpoints {
   private static UserCache userCache = new UserCache();
 
   //This variable is used to tell if an update of the cache is needed. Default true.
-  private boolean forceUpdate = true;
+  private static boolean forceUpdate = true;
 
   /**
    * @param idUser

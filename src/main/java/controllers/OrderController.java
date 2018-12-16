@@ -1,10 +1,13 @@
 package controllers;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import model.*;
 import utils.Log;
+
+import javax.xml.crypto.Data;
 
 
 public class OrderController {
@@ -57,12 +60,7 @@ public class OrderController {
       order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
       //Setting the ID of the user to the order.
-   order.setCustomer(UserController.getUser(order.getCustomer().getId()));
-     //order.setCustomer(UserController.createUser(order.getCustomer()));
-
-
-
-      if(order.getShippingAddress().getId()==order.getBillingAddress().getId()+1) {
+     order.setCustomer(UserController.getUser(order.getCustomer().getId()));
 
         // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts: FIX
         // Insert the order in the DB
@@ -97,8 +95,7 @@ public class OrderController {
         //Add line items to the order, commit and return the order
         order.setLineItems(items);
         dbCon.getConnection().commit();
-        return order;
-      }
+
       // adding nullpointerexception, since we are using getUser() instead of createUser() - we would like people to be
       // logged in before they create an order - like Amazon.
     } catch (SQLException | NullPointerException e) {
@@ -107,7 +104,6 @@ public class OrderController {
         //If exception was catched, we roll our statements to the database back.
         System.out.println("rolling back");
         dbCon.getConnection().rollback();
-        dbCon = new DatabaseController();
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
@@ -121,7 +117,7 @@ public class OrderController {
         e.printStackTrace();
       }
     }
-    return  null;
+    return  order;
   }
 
 
@@ -184,6 +180,7 @@ public class OrderController {
     LineItem lineItem = null;
     //New LineitemList
     ArrayList<LineItem> lineItemsList = new ArrayList<>();
+    //New productlist
     Product product = null;
     // New adress object
     Address billingAddress = null;
@@ -192,9 +189,7 @@ public class OrderController {
 
     try {
       while (rs.next()) {
-
         if (order == null) {
-
           user = UserController.formUser(rs);
 
           product = ProductController.formProduct(rs);
@@ -234,9 +229,8 @@ public class OrderController {
      }
      // Orders instead of order in sql statement
 
-
      String sql = "SELECT * FROM orders\n" +
-             "             inner join\n" +
+             "inner join\n" +
              "             user ON orders.user_id = user.u_id\n" +
              "             inner join \n" +
              "             line_item ON orders.o_id = line_item.order_id \n" +
@@ -254,12 +248,6 @@ public class OrderController {
      // New order object
     // Order order = null;
 
-
-
-
-
-
-
      try {
        while(rs.next()) {
 
@@ -271,14 +259,12 @@ public class OrderController {
          Address billingAddress = null;
          // New adress object
          Address shippingAddress = null;
-
+         // new product object
          Product product = null;
-
          //New LineitemList
          ArrayList<LineItem> lineItemsList = new ArrayList<>();
 
         if (orders.isEmpty() || rs.getInt("o_id") != orders.get(orders.size()-1).getId()) {
-
 
           // Creating new user object
           user = UserController.formUser(rs);
@@ -306,7 +292,6 @@ public class OrderController {
           lineItemsList.add(lineItem);
 
           orders.get(orders.size()-1).getLineItems().add(lineItem);
-
         }
 
        }
