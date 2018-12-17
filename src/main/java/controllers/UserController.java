@@ -163,9 +163,13 @@ public class UserController {
 
     try {
 
-      String sql = "Select * from user where email="+user.getEmail()+" and password="+user.getPassword();
+      String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
 
-      ResultSet rs = dbCon.query(sql);
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
+      preparedStatement.setString(1, user.getEmail());
+      preparedStatement.setString(2, user.getPassword());
+
+      ResultSet rs = preparedStatement.executeQuery();
 
       if (rs.next()) {
         user = formUser(rs);

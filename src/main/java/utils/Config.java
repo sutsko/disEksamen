@@ -129,6 +129,6 @@ public final class Config {
     USER_TTL = json.get("USER_TTL").getAsLong();
     XOR_KEY = json.get("XOR_KEY").getAsString().toCharArray();
     PEBER = json.get("PEBER").toString();
-    HEMMLIGHED = json.get("HEMMELIGHED").toString();
+    HEMMLIGHED = json.get("HEMMLIGHED").toString();
   }
 }

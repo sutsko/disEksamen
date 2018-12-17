@@ -30,7 +30,7 @@ public final class Token {
 
     public static boolean verifyToken(String token, User user) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256("secret");
+            Algorithm algorithm = Algorithm.HMAC256(Config.getHEMMLIGHED());
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer("auth0")
                     .withSubject(Integer.toString(user.getId()))
