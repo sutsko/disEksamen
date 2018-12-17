@@ -162,15 +162,10 @@ public class UserController {
     user.setPassword(Hashing.sha(user.getPassword()));
 
     try {
-      /** til rapporten - intetn forhindre i at to har samme email og password**/
 
-      String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
+      String sql = "Select * from user where email="+user.getEmail()+" and password="+user.getPassword();
 
-      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
-      preparedStatement.setString(1, user.getEmail());
-      preparedStatement.setString(2, user.getPassword());
-
-      ResultSet rs = preparedStatement.executeQuery();
+      ResultSet rs = dbCon.query(sql);
 
       if (rs.next()) {
         user = formUser(rs);
