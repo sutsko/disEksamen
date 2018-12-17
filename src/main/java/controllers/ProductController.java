@@ -32,14 +32,7 @@ public class ProductController {
     try {
       // Get first row and create the object and return it
       if (rs.next()) {
-        product =
-            new Product(
-                rs.getInt("p_id"),
-                rs.getString("product_name"),
-                rs.getString("sku"),
-                rs.getFloat("price"),
-                rs.getString("description"),
-                rs.getInt("stock"));
+        product = formProduct(rs);
 
         // Return the product
         return product;
@@ -67,15 +60,7 @@ public class ProductController {
 
     try {
       if (rs.next()) {
-        product =
-            new Product(
-                rs.getInt("p_id"),
-                rs.getString("product_name"),
-                rs.getString("sku"),
-                rs.getFloat("price"),
-                rs.getString("description"),
-                rs.getInt("stock"));
-
+        product = formProduct(rs);
         return product;
       } else {
         System.out.println("No user found");
@@ -106,15 +91,7 @@ public class ProductController {
 
     try {
       while (rs.next()) {
-        Product product =
-            new Product(
-                rs.getInt("p_id"),
-                rs.getString("product_name"),
-                rs.getString("sku"),
-                rs.getFloat("price"),
-                rs.getString("description"),
-                rs.getInt("stock"));
-
+        Product product = formProduct(rs);
         products.add(product);
       }
     } catch (SQLException ex) {

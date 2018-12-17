@@ -70,11 +70,9 @@ public class OrderEndpoints {
     json = Encryption.encryptDecryptXOR(json);
 
     //Setting the forceUpdate to false, since we just created a new cache
-    this.forceUpdate = false;
-
     // Return the data to the user
     if (orders != null) {
-      this.forceUpdate = true;
+      this.forceUpdate = false;
       // Return a response with status 200 and JSON as type
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
     } else {

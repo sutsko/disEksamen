@@ -1,17 +1,13 @@
 package controllers;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.ArrayList;
 import model.*;
 import utils.Log;
 
-import javax.xml.crypto.Data;
 
 
 public class OrderController {
-
 
   //For establishing a connection with the database later
   private static DatabaseController dbCon;
@@ -43,7 +39,6 @@ public class OrderController {
     // Check for DB Connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
-
     }
 
     try {
@@ -51,20 +46,17 @@ public class OrderController {
       //We set the autocommit to false, making the way to use transactions
       dbCon.getConnection().setAutoCommit(false);
 
-
-
-
       //Setting the IDs of billing- and shippingAddress to the order
       //in other word: Save addresses to database and save them back to initial order instance
       order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
       order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
 
       //Setting the ID of the user to the order.
-     order.setCustomer(UserController.getUser(order.getCustomer().getId()));
+      order.setCustomer(UserController.getUser(order.getCustomer().getId()));
 
-        // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts: FIX
-        // Insert the order in the DB
-        int orderID = dbCon.insert("INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
+      // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts: FIX
+      // Insert the order in the DB
+      int orderID = dbCon.insert("INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, order_created_at, order_updated_at) VALUES("
                 + order.getCustomer().getId()
                 + ", "
                 + order.getBillingAddress().getId()
@@ -95,6 +87,7 @@ public class OrderController {
         //Add line items to the order, commit and return the order
         order.setLineItems(items);
         dbCon.getConnection().commit();
+      return  order;
 
       // adding nullpointerexception, since we are using getUser() instead of createUser() - we would like people to be
       // logged in before they create an order - like Amazon.
@@ -117,7 +110,7 @@ public class OrderController {
         e.printStackTrace();
       }
     }
-    return  order;
+    return  null;
   }
 
 
@@ -173,19 +166,19 @@ public class OrderController {
     // Do the query in the database and create an empty object for the results
     ResultSet rs = dbCon.query(sql);
     // New order object
-    Order order = null;
+    Order order=null;
     // User object
-    User user = null;
+    User user;
     // New lineitem object
-    LineItem lineItem = null;
+    LineItem lineItem;
     //New LineitemList
     ArrayList<LineItem> lineItemsList = new ArrayList<>();
     //New productlist
-    Product product = null;
+    Product product;
     // New adress object
-    Address billingAddress = null;
+    Address billingAddress;
     // New adress object
-    Address shippingAddress = null;
+    Address shippingAddress;
 
     try {
       while (rs.next()) {
@@ -214,7 +207,6 @@ public class OrderController {
       }
       // Returns the build order
       return order;
-
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
     }
@@ -252,45 +244,37 @@ public class OrderController {
        while(rs.next()) {
 
          // User object
-         User user = null;
+         User user;
          // New lineitem object
-         LineItem lineItem = null;
+         LineItem lineItem;
          // New adress object
-         Address billingAddress = null;
+         Address billingAddress;
          // New adress object
-         Address shippingAddress = null;
+         Address shippingAddress;
          // new product object
-         Product product = null;
+         Product product;
          //New LineitemList
          ArrayList<LineItem> lineItemsList = new ArrayList<>();
 
+         //Setting the diffent variables of an order in this if-block
         if (orders.isEmpty() || rs.getInt("o_id") != orders.get(orders.size()-1).getId()) {
 
-          // Creating new user object
           user = UserController.formUser(rs);
-
           product = ProductController.formProduct(rs);
-
           lineItem = LineItemController.formLineItem(rs, product);
-
           lineItemsList.add(lineItem);
-
-          // Creating new billingAddress
           billingAddress = AddressController.formBillingAddress(rs);
-          // Creating new shippingAddress
           shippingAddress = AddressController.formShippingAddress(rs);
 
-          // Creating new order
-         Order order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
-
-          // Adding order to arraylist
+          //Creating the order and adding it to arraylist
+          Order order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
           orders.add(order);
+
+          //Next if-block checks for, if an order has multiple products, and adds to lineitemslist
         } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId()){
           product = ProductController.formProduct(rs);
-
           lineItem = LineItemController.formLineItem(rs, product);
           lineItemsList.add(lineItem);
-
           orders.get(orders.size()-1).getLineItems().add(lineItem);
         }
 
@@ -300,12 +284,9 @@ public class OrderController {
        System.out.println(ex.getMessage());
      }
 
-     // return the orders
+     // return the orders, which will be null
      return orders;
 
    }
-
-
-
 
 }

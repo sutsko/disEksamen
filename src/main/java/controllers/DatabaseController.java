@@ -17,9 +17,6 @@ public class DatabaseController {
     private static Connection connection;
 
 
-
-
-
   public DatabaseController() {
     connection = getConnection();
   }

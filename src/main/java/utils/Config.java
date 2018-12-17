@@ -23,6 +23,18 @@ public final class Config {
   private static long ORDER_TTL;
   private static long USER_TTL;
   private static char[] XOR_KEY;
+  private static String PEBER;
+  private static String HEMMLIGHED;
+
+  public static String getPEBER() {
+    return PEBER;
+  }
+
+  public static String getHEMMLIGHED() {
+    return HEMMLIGHED;
+  }
+
+
 
   public static char[] getXorKey() {
     return XOR_KEY;
@@ -116,5 +128,7 @@ public final class Config {
     ORDER_TTL = json.get("ORDER_TTL").getAsLong();
     USER_TTL = json.get("USER_TTL").getAsLong();
     XOR_KEY = json.get("XOR_KEY").getAsString().toCharArray();
+    PEBER = json.get("PEBER").toString();
+    HEMMLIGHED = json.get("HEMMELIGHED").toString();
   }
 }

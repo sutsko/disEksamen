@@ -10,19 +10,9 @@ import java.util.Date;
 
 public final class Token {
 
-    /**
-    private String token;
-
-    public Token(String token) {
-        this.token = token;
-    }
-**/
-
     public static String generateToken(User user) {
-
         try {
-            /**Den der secret skal gemmes et andet sted**/
-            Algorithm algorithm = Algorithm.HMAC256("secret");
+            Algorithm algorithm = Algorithm.HMAC256(Config.getHEMMLIGHED());
             String token = JWT.create()
                     .withIssuer("auth0")
                     .withIssuedAt(new Date(System.currentTimeMillis()))
@@ -39,8 +29,6 @@ public final class Token {
 
 
     public static boolean verifyToken(String token, User user) {
-
-
         try {
             Algorithm algorithm = Algorithm.HMAC256("secret");
             JWTVerifier verifier = JWT.require(algorithm)
