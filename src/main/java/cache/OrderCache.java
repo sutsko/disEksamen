@@ -29,7 +29,7 @@ public class OrderCache {
         // if cache is alright, return cache as arraylist of orders
          **/
         if (forceUpdate
-                || ((this.created + this.ttl) <= (System.currentTimeMillis()/1000L)) || this.orders==null) {
+                || ((this.created + this.ttl) <= (System.currentTimeMillis())) || this.orders==null) {
 
             // Get orders from controller, since we wish to update.
             ArrayList<Order> orders = OrderController.getOrders();

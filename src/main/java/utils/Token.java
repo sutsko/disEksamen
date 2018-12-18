@@ -12,6 +12,7 @@ public final class Token {
 
     public static String generateToken(User user) {
         try {
+            // We load the hashing algorithm we wish to use. And create the token with claims.
             Algorithm algorithm = Algorithm.HMAC256(Config.getHEMMLIGHED());
             String token = JWT.create()
                     .withIssuer("auth0")
@@ -30,6 +31,7 @@ public final class Token {
 
     public static boolean verifyToken(String token, User user) {
         try {
+            // We load the hashing algorithm we wish to use. And verify the token based on claims.
             Algorithm algorithm = Algorithm.HMAC256(Config.getHEMMLIGHED());
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer("auth0")

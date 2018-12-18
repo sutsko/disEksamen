@@ -9,9 +9,6 @@ public final class Encryption {
 
       // The key is predefined and hidden in code
       // TODO: Create a more complex code and store it somewhere better FIX
-
-      /**måske en del af koden skal komme fra et andet sted**/
-
       //THIS key is used for encryption.
       char[] key = {'C', 'B', 'S'};
 
@@ -26,8 +23,8 @@ public final class Encryption {
           functions in our Endpoints.
        * The stringbuilder allows to add a new value to the variable, which will then be a new char based on the XOR-operation of two other chars
           found in the rawstring and the key we have set somewhere else. Let's look at an example. Say the "rawString.charAt(i)" = a and "keyyy[i % keyyy.length]" = b.
-       * The binary value of the above is 0110 0001 and 0110 0010. Doing the XOR operation on these will give the binary value 0110 0000 which is = ', when converted back.
-       * The ' is now our new value stored in the thisIsEncrypted variable for the rawString.charAt(i). This is then done for all characters as iterations in rawString.
+       * The binary value of the above is 0110 0001 and 0110 0010. Doing the XOR operation on these will give the binary value 00000011 which is = 3, when converted back.
+       * The 3 is now our new value stored in the thisIsEncrypted variable for the rawString.charAt(i). This is then done for all characters as iterations in rawString.
        * The use of modulo ensures that even though our "i" surpassed the amount of characters in our key, we will still get a value from it to be XOR'ed with.
       **/
       for (int i = 0; i < rawString.length(); i++) {

@@ -19,7 +19,7 @@ public class OrderController {
 
   /** @param order
    * @return
-   * 1. The createOrder() methods takes the order we created in the endpoint, now to add more information to it.
+   * 1. The createOrder() methods takes the order we initialized in the endpoint, now to add more information to it.
    * 2. First we set a created- and updatedAt for the order.
    * 3. Creating an order is a lot of steps - to ensure they all are declared right, we use transactions
    * 4. After we have begun the transaction we set the 2 address-IDs with the keys returned from the getXXXAddress() methods
@@ -135,13 +135,11 @@ public class OrderController {
 
 
   /** @param orderId
-   * @return
+   * @return Order
    * 1. The getOrder() methods gets the order based on the id
-   * 2. First we build an SQL query to get all information regarding our orders in a resultset.
-   * 3. Creating an order is a lot of steps - to ensure they all are declared right, we use transactions
-   * 4. After we have begun the transaction we set the 2 address-IDs with the keys returned from the getXXXAddress() methods
-   * 5. We get the user who created the order and set the order.Customer to this.
-   * 6. We insert the order based on the things we found out in previuos steps
+   * 2. First we build an SQL query to get all information regarding our orders in a resultset
+   * 3. If there are several products within one order, we make use of the "else" statement.
+   * 4. We insert the order based on the things we found out in previuos steps
    */
   public static Order getOrder(int orderId) {
     // check for connection
@@ -182,24 +180,22 @@ public class OrderController {
 
     try {
       while (rs.next()) {
+
+        //Setting the different variables needed to create an order - if you have no order created aldready.
         if (order == null) {
           user = UserController.formUser(rs);
-
           product = ProductController.formProduct(rs);
-
           lineItem = LineItemController.formLineItem(rs, product);
-
           lineItemsList.add(lineItem);
-
-          // Creating new billingAddress
           billingAddress = AddressController.formBillingAddress(rs);
-
-          // Creating new Shippingaddress
           shippingAddress = AddressController.formShippingAddress(rs);
 
+          //creating the order
           order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
 
         }else {
+          //Should the resultset be more than one line, it means there are several bought products.
+          //This will add them to the order.
           product = ProductController.formProduct(rs);
           lineItem = LineItemController.formLineItem(rs, product);
           order.getLineItems().add(lineItem);
@@ -213,14 +209,21 @@ public class OrderController {
     return null;
   }
 
-
+  /**
+   * @return Order arraylist
+   * 1. The getOrders() methods gets all the orders from the database
+   * 2. First we build an SQL query to get all information regarding our orders in a resultset
+   * 3. If there are several products within one order, we make use of the "else if" statement.
+   * 4. We insert the orders in an arraylist based on the things we found out in previuos steps, and return it when
+   * finished
+   */
    public static ArrayList<Order> getOrders() {
      // check for connection
      if (dbCon == null) {
        dbCon = new DatabaseController();
      }
-     // Orders instead of order in sql statement
 
+     // Orders instead of order in sql statement
      String sql = "SELECT * FROM orders\n" +
              "inner join\n" +
              "             user ON orders.user_id = user.u_id\n" +
@@ -234,29 +237,29 @@ public class OrderController {
              "             product ON line_item.product_id  = product.p_id\n" +
              "             order by orders.o_id";
 
+     //Initialize a new arraylist
      ArrayList<Order> orders = new ArrayList<Order>();
      // Do the query in the database and create an empty object for the results
      ResultSet rs = dbCon.query(sql);
-     // New order object
-    // Order order = null;
 
      try {
        while(rs.next()) {
 
-         // User object
+         // Declare User object
          User user;
-         // New lineitem object
+         // Declare New lineitem object
          LineItem lineItem;
-         // New adress object
+         // Declare New adress object
          Address billingAddress;
-         // New adress object
+         // Declare New adress object
          Address shippingAddress;
-         // new product object
+         // Declare new product object
          Product product;
-         //New LineitemList
+         //Initializing New LineitemList
          ArrayList<LineItem> lineItemsList = new ArrayList<>();
 
-         //Setting the diffent variables of an order in this if-block
+         //Setting the different variables needed to create an order - if you have no order created aldready.
+         //Or the orderID has changed
         if (orders.isEmpty() || rs.getInt("o_id") != orders.get(orders.size()-1).getId()) {
 
           user = UserController.formUser(rs);
@@ -270,7 +273,7 @@ public class OrderController {
           Order order = formOrder1(rs, user, lineItemsList, billingAddress, shippingAddress);
           orders.add(order);
 
-          //Next if-block checks for, if an order has multiple products, and adds to lineitemslist
+          //Next if-block checks for, if an order has multiple products, and adds to lineitemslist, and adds them to order.
         } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId()){
           product = ProductController.formProduct(rs);
           lineItem = LineItemController.formLineItem(rs, product);
@@ -279,6 +282,7 @@ public class OrderController {
         }
 
        }
+       //return the build orders as arraylist.
        return orders;
      } catch (SQLException ex) {
        System.out.println(ex.getMessage());

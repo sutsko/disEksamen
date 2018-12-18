@@ -16,7 +16,7 @@ public final class Hashing {
     try {
       // We load the hashing algoritm we wish to use.
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
+      //Adding the salt
       digest.update(salt.getBytes());
 
       // We convert to byte array

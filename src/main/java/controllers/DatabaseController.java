@@ -13,9 +13,7 @@ import utils.Config;
 
 public class DatabaseController {
 
-
     private static Connection connection;
-
 
   public DatabaseController() {
     connection = getConnection();
@@ -47,6 +45,7 @@ public class DatabaseController {
             // Register the driver in order to use it
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 
+            System.out.println("hej");
             // create a connection to the database
             connection = DriverManager.getConnection(url, user, password);
         }
