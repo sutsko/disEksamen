@@ -5,6 +5,8 @@ import java.sql.*;
 import model.Address;
 import utils.Log;
 
+import javax.xml.crypto.Data;
+
 public class AddressController {
 
   private static DatabaseController dbCon;
@@ -50,45 +52,11 @@ public class AddressController {
         return address;
       }
 
-      /**
-      // Insert the address in the DB
-      int addressID = dbCon.insert(
-              "INSERT INTO address(name, city, zipcode, street_address) VALUES('"
-                      + address.getName()
-                      + "', '"
-                      + address.getCity()
-                      + "', '"
-                      + address.getZipCode()
-                      + "', '"
-                      + address.getStreetAddress()
-                      + "')");
-
-      if (addressID != 0) {
-        //Update the address id ofthe address before returning
-        address.setId(addressID);
-        return address;
-      }
-       */
-
-
-
     } catch (SQLException e){
       e.printStackTrace();
-    }/**finally {
-      try {
-        rs.close();
-
-      } catch (SQLException h) {
-        h.printStackTrace();
-        try {
-          dbCon.getConnection().close();
-        } catch (SQLException e) {
-          e.printStackTrace();
-        }
-      }
-    }*/
+    }
       // Return null if address has not been inserted into database
-    return null;
+    return address;
 
   }
 

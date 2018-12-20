@@ -4,7 +4,10 @@ package controllers;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+
+import com.mysql.cj.xdevapi.SqlDataResult;
 import model.User;
 import utils.Log;
 import utils.Hashing;
@@ -26,19 +29,28 @@ public class UserController {
    */
   public static User getUser(int id) {
 
+    ResultSet rs = null;
+
+    try{
+
     // Check for connection
-    if (dbCon == null) {
+    if (dbCon == null || dbCon.getConnection().isClosed()) {
       dbCon = new DatabaseController();
     }
 
+    //Building SQL statement and executing query
+          String sql = "SELECT * FROM user where u_id = ?";
     // Build the query for DB
-    String sql = "SELECT * FROM user where u_id=" + id;
+          PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
 
-    // Actually do the query, declare an object to null.
-    ResultSet rs = dbCon.query(sql);
-    User user = null;
+          preparedStatement.setInt(1, id);
 
-    try {
+
+          // Actually do the query, declare an object to null.
+          rs = preparedStatement.executeQuery();
+          User user = null;
+
+
       // Get first object, since we only have one, form the user and return it.
       if (rs.next()) {
         user = formUser(rs);
@@ -48,10 +60,21 @@ public class UserController {
       }
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
-    }
+    } finally {
+      try {
+        rs.close();
+      } catch (SQLException h) {
+        h.printStackTrace();
+        try {
+          dbCon.getConnection().close();
 
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
     // Return null
-    return user;
+    return null;
   }
 
 
@@ -64,31 +87,47 @@ public class UserController {
    */
   public static ArrayList<User> getUsers() {
 
+    ResultSet rs = null;
+
+    try{
     // Check for DB connection
-    if (dbCon == null) {
+    if (dbCon == null || dbCon.getConnection().isClosed()) {
       dbCon = new DatabaseController();
     }
 
-    // Build SQL
-    String sql = "SELECT * FROM user";
+      //Building SQL statement and executing query
+           String sql = "SELECT * FROM user";
 
-    // Do the query and initialize an empty list for use if we don't get results
-    ResultSet rs = dbCon.query(sql);
+           PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
+
+           rs = preparedStatement.executeQuery();
+
     ArrayList<User> users = new ArrayList<User>();
 
-    try {
       // Loop through DB Data
       while (rs.next()) {
         User user = formUser(rs);
         // Add element to list
         users.add(user);
       }
+      return users;
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
-    }
+    } finally {
+      try {
+        rs.close();
+      } catch (SQLException h) {
+        h.printStackTrace();
+        try {
+          dbCon.getConnection().close();
 
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
     // Return the list of users
-    return users;
+    return null;
   }
 
 
@@ -102,6 +141,7 @@ public class UserController {
    */
   public static User createUser(User user) {
 
+    try{
     // Write in log that we've reach this step
     Log.writeLog(UserController.class.getName(), user, "Actually creating a user in DB", 0);
 
@@ -110,34 +150,46 @@ public class UserController {
     user.setCreatedTime(System.currentTimeMillis() / 1000L);
 
     // Check for DB Connection
-    if (dbCon == null) {
+    if (dbCon == null || dbCon.getConnection().isClosed()) {
       dbCon = new DatabaseController();
     }
-    // Insert the user in the DB
 
-    // TODO: Hash the user password before saving it. FIX
-    //Based on the users password, we use the hashing utill to hash the password. We use sha.
-    user.setPassword(Hashing.sha(user.getPassword()));
 
-    int userID = dbCon.insert(
-        "INSERT INTO user(first_name, last_name, password, email, created_at) VALUES('"
-            + user.getFirstname()
-            + "', '"
-            + user.getLastname()
-            + "', '"
-            + user.getPassword()
-            + "', '"
-            + user.getEmail()
-            + "', "
-            + user.getCreatedTime()
-            + ")");
+      // TODO: Hash the user password before saving it. FIX
+      //Based on the users password, we use the hashing utill to hash the password. We use sha.
+      user.setPassword(Hashing.sha(user.getPassword()));
 
-    if (userID != 0) {
-      //Update the userid of the user before returning
-      user.setId(userID);
-    } else{
-      // Return null if user has not been inserted into database
-      return null;
+      // Insert the user in the DB
+      //Building SQL statement and executing query
+            String sql = "INSERT INTO user(first_name, last_name, password, email, created_at) VALUES(?,?,?,?,?)";
+
+            PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, user.getFirstname());
+            preparedStatement.setString(2, user.getLastname());
+            preparedStatement.setString(3, user.getPassword()  );
+            preparedStatement.setString(4, user.getEmail());
+            preparedStatement.setLong(5, user.getCreatedTime());
+
+
+            int affectedRows = preparedStatement.executeUpdate();
+
+            // Get our key back in order to apply it to an object as ID
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()&&affectedRows==1) {
+              user.setId(generatedKeys.getInt(1));
+              return user;
+            } else {
+              // Return null if user has not been inserted into database
+              return null;
+            }
+    }catch (SQLException e){
+      e.printStackTrace();
+    }finally {
+      try {
+        dbCon.getConnection().close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
     }
 
     // Return user
@@ -147,7 +199,7 @@ public class UserController {
 
 
   /** @param user
-   * @return affected
+   * @return boolean
    * 1. The updateUser() methods takes the User we initialized in the endpoint
    * 2. First we hash the password
    * 3. Next we build the SQL-prepared statement and update it in our database
@@ -155,27 +207,48 @@ public class UserController {
    */
   public static boolean updateUser(User user) {
 
-    //Setting log to know where we are
-    Log.writeLog(UserController.class.getName(), user, "Actually updating a user in DB", 0);
+    try {
+      //Setting log to know where we are
+      Log.writeLog(UserController.class.getName(), user, "Actually updating a user in DB", 0);
 
-    //Checking for connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
+      //Checking for connection
+      if (dbCon == null || dbCon.getConnection().isValid(1)) {
+        dbCon = new DatabaseController();
+      }
+
+      //Hashing user password
+      user.setPassword(Hashing.sha(user.getPassword()));
+
+      //Building SQL statement and executing query
+      String sql = "UPDATE user SET first_name = ?, last_name = ?, password = ?, email = ? WHERE u_id = ?";
+
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      preparedStatement.setString(1, user.getFirstname());
+      preparedStatement.setString(2, user.getLastname());
+      preparedStatement.setString(3, user.getPassword());
+      preparedStatement.setString(4, user.getEmail());
+      preparedStatement.setLong(5, user.getId());
+
+
+      int rowsAffected = preparedStatement.executeUpdate();
+
+      if (rowsAffected==1){
+        return true;
+      } else {
+        return false;
+      }
+
+    }catch (SQLException e){
+      e.printStackTrace();
     }
-
-    //Hashing user password
-    user.setPassword(Hashing.sha(user.getPassword()));
-
-    //Updating in database, and declaring a boolean based on the answer. Return it afterwards.
-    boolean affected = dbCon.update(
-            "UPDATE user SET " +
-                    "first_name = " + "'" + user.getFirstname() + "'," +
-                    "last_name = " + "'" + user.getLastname() + "'," +
-                    "password = " + "'" + user.getPassword() + "'," +
-                    "email = " + "'" + user.getEmail() + "'" +
-                    "WHERE u_id = " + "'" + user.getId() + "'");
-
-    return affected;
+    finally {
+      try {
+        dbCon.getConnection().close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+    return false;
   }
 
 
@@ -192,16 +265,16 @@ public class UserController {
     ResultSet rs = null;
     // Write in log that we've reach this step
     Log.writeLog(UserController.class.getName(), user, "Trying to log on", 0);
-
+    try {
     //Check for connection
-    if (dbCon == null) {
+    if (dbCon == null || dbCon.getConnection().isClosed() ) {
       dbCon = new DatabaseController();
     }
 
     //Hashing password
     //user.setPassword(Hashing.sha(user.getPassword()));
 
-    try {
+
       //Building SQL statement and executing query
       String sql = "SELECT * FROM user WHERE email = ? AND password = ?";
 
@@ -239,24 +312,44 @@ public class UserController {
   }
 
   /** @param idUser
-   * @return deleted
+   * @return boolean
    * 1. The deleteUser() methods deletes the user from the database based on the id of the user
    * 2. Next we build the SQL-prepared statement and compare it with our user-data in the database.
    * 3. If the delete is succesful, it will return true. False if not. The deleted value is return.
    */
   public static boolean deleteUser(int idUser) {
 
+    try {
       // Check for DB Connection
-      if (dbCon == null) {
+      if (dbCon == null || dbCon.getConnection().isClosed()) {
         dbCon = new DatabaseController();
       }
+
+      //Building SQL statement and executing query
+      String sql = "Delete FROM user where u_id = ?";
       // Build the query for DB
-      String sql = "Delete FROM user where u_id=" + idUser;
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
 
-      boolean deleted = dbCon.delete(sql);
+      preparedStatement.setInt(1, idUser);
 
-      return deleted;
+      int affectedRows = preparedStatement.executeUpdate();
 
+      if (affectedRows == 1) {
+        return true;
+      }else{
+        return false;
+      }
+
+    }catch (SQLException e){
+      e.printStackTrace();
+    }finally {
+      try {
+        dbCon.getConnection().close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+    return false;
   }
 
 

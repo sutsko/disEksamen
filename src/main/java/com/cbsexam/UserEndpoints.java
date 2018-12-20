@@ -136,7 +136,7 @@ public class UserEndpoints {
     // Return the user with the status code 200 if succesful or 401 if failed
     if (user != null) {
       //Welcoming the user and providing him/her with the token they need in order to delete or update their user.
-      String msg = "Welcome back "+user.getFirstname() + "! You are now logged on and will receive a token - please save" +
+      String msg = "Welcome back "+user.getFirstname()+ "! You are now logged on and will receive a token - please save" +
               " it, as you will need it throughout the system. This is your token:\n\n"+user.getToken() + "\n\nShould you" +
               "loose your token, you can always log in again :D Enjoy!";
       return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(msg).build();

@@ -54,9 +54,11 @@ public class LineItemController {
       // Get our key back in order to apply it to an object as ID
       ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
       if (generatedKeys.next()&&rowsAffected==1) {
+
         lineItem.setId(generatedKeys.getInt(1));
         // Get the ID of the product, since the user will not send it to us.
         lineItem.getProduct().setId(ProductController.getProductBySku(lineItem.getProduct().getSku()).getId());
+
         return lineItem;
       } else {
         // Return null if line item has not been inserted into database
@@ -65,7 +67,7 @@ public class LineItemController {
     }catch (SQLException e){
       e.printStackTrace();
     }
-    return null;
+    return lineItem;
   }
 
 
