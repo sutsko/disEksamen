@@ -20,6 +20,8 @@ public class ProductCache {
     this.ttl = Config.getProductTtl();
   }
 
+
+
   public ArrayList<Product> getProducts(Boolean forceUpdate) {
     /** If we whis to clear cache, we can set force update.
     // Otherwise we look at the age of the cache and figure out if we should update.
@@ -41,6 +43,8 @@ public class ProductCache {
     // Return the documents
     return this.products;
   }
+
+
 
   public Product getProduct(boolean forceUpdate, int productID) {
     Product product = new Product();

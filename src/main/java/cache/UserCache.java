@@ -22,6 +22,8 @@ public class UserCache {
         this.ttl = Config.getUserTtl();
     }
 
+
+
     public ArrayList<User> getUsers(Boolean forceUpdate) {
         /**If we whis to clear cache, we can set force update.
         // Otherwise we look at the age of the cache and figure out if we should update.
@@ -41,6 +43,8 @@ public class UserCache {
         // Return the users
         return this.users;
     }
+
+
 
     public User getUser(boolean forceUpdate, int userID) {
         User user = new User();

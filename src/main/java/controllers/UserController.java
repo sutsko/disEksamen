@@ -54,6 +54,8 @@ public class UserController {
     return user;
   }
 
+
+
   /**
    * @return User arraylist
    * 1. The getUsers() methods gets the all the users from the database
@@ -88,6 +90,8 @@ public class UserController {
     // Return the list of users
     return users;
   }
+
+
 
   /** @param user
    * @return user
@@ -140,6 +144,8 @@ public class UserController {
     return user;
   }
 
+
+
   /** @param user
    * @return affected
    * 1. The updateUser() methods takes the User we initialized in the endpoint
@@ -171,6 +177,8 @@ public class UserController {
 
     return affected;
   }
+
+
 
   /** @param user
    * @return user
@@ -237,6 +245,8 @@ public class UserController {
       return deleted;
 
   }
+
+
 
   /** @param rs
    * @return user (u)

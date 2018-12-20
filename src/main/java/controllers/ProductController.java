@@ -15,6 +15,8 @@ public class ProductController {
     dbCon = new DatabaseController();
   }
 
+
+
   /** @param id
    * @return Product
    * 1. The getProduct() methods gets the product based on the id
@@ -53,6 +55,8 @@ public class ProductController {
     return product;
   }
 
+
+
   /** @param sku
    * @return Product
    * 1. The getProductBySku() methods gets the product based on the sku
@@ -88,6 +92,8 @@ public class ProductController {
     return product;
   }
 
+
+
   /**
    * @return Product arraylist
    * 1. The getProducts() methods gets the all the products from the database
@@ -122,6 +128,8 @@ public class ProductController {
     }
     return products;
   }
+
+
 
   /** @param product
    * @return product
@@ -170,6 +178,8 @@ public class ProductController {
     // Return product
     return product;
   }
+
+
 
   /**
    * Initialising, instantiating and declaring a product.

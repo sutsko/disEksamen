@@ -14,8 +14,9 @@ import utils.Config;
 public class DatabaseController {
 
     private static Connection connection;
+    
 
-  public DatabaseController() {
+    public DatabaseController() {
     connection = getConnection();
   }
 
@@ -29,7 +30,7 @@ public class DatabaseController {
 
         //If there aren't a connection we create one - otherwise we return the one we have.
         if (connection == null) {
-            // Set the dataabase connect with the data from the config
+            // Set the database connect with the data from the config
             String url =
                     "jdbc:mysql://"
                             + Config.getDatabaseHost()
@@ -45,7 +46,6 @@ public class DatabaseController {
             // Register the driver in order to use it
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 
-            System.out.println("hej");
             // create a connection to the database
             connection = DriverManager.getConnection(url, user, password);
         }

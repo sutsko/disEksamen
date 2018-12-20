@@ -17,6 +17,8 @@ public class OrderController {
     dbCon = new DatabaseController();
   }
 
+
+
   /** @param order
    * @return
    * 1. The createOrder() methods takes the order we initialized in the endpoint, now to add more information to it.
@@ -114,6 +116,8 @@ public class OrderController {
   }
 
 
+
+
   public static Order formOrder1(ResultSet rs, User user, ArrayList<LineItem> lineItemsList, Address billingsAddress, Address shippingsAddres) {
     try {
       Order order = new Order(
@@ -185,8 +189,10 @@ public class OrderController {
         if (order == null) {
           user = UserController.formUser(rs);
           product = ProductController.formProduct(rs);
+
           lineItem = LineItemController.formLineItem(rs, product);
           lineItemsList.add(lineItem);
+
           billingAddress = AddressController.formBillingAddress(rs);
           shippingAddress = AddressController.formShippingAddress(rs);
 
@@ -208,6 +214,8 @@ public class OrderController {
     }
     return null;
   }
+
+
 
   /**
    * @return Order arraylist
@@ -264,8 +272,10 @@ public class OrderController {
 
           user = UserController.formUser(rs);
           product = ProductController.formProduct(rs);
+
           lineItem = LineItemController.formLineItem(rs, product);
           lineItemsList.add(lineItem);
+
           billingAddress = AddressController.formBillingAddress(rs);
           shippingAddress = AddressController.formShippingAddress(rs);
 
@@ -275,8 +285,10 @@ public class OrderController {
 
           //Next if-block checks for, if an order has multiple products, and adds to lineitemslist, and adds them to order.
         } else if (rs.getInt("o_id") == orders.get(orders.size()-1).getId()){
+
           product = ProductController.formProduct(rs);
           lineItem = LineItemController.formLineItem(rs, product);
+
           lineItemsList.add(lineItem);
           orders.get(orders.size()-1).getLineItems().add(lineItem);
         }
