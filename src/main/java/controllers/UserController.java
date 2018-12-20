@@ -189,6 +189,7 @@ public class UserController {
    */
   public static User login(User user) {
 
+    ResultSet rs = null;
     // Write in log that we've reach this step
     Log.writeLog(UserController.class.getName(), user, "Trying to log on", 0);
 
@@ -198,7 +199,7 @@ public class UserController {
     }
 
     //Hashing password
-    user.setPassword(Hashing.sha(user.getPassword()));
+    //user.setPassword(Hashing.sha(user.getPassword()));
 
     try {
       //Building SQL statement and executing query
@@ -208,7 +209,7 @@ public class UserController {
       preparedStatement.setString(1, user.getEmail());
       preparedStatement.setString(2, user.getPassword());
 
-      ResultSet rs = preparedStatement.executeQuery();
+      rs = preparedStatement.executeQuery();
 
       //Loop through resultset once, form the user and generate a token and return user
       if (rs.next()) {
@@ -221,6 +222,18 @@ public class UserController {
       }
     } catch (SQLException e) {
       System.out.println(e.getMessage());
+    } finally {
+      try{
+        rs.close();
+
+      }catch (SQLException h){
+        h.printStackTrace();
+        try {
+          dbCon.getConnection().close();
+        }catch (SQLException e){
+         e.printStackTrace();
+        }
+      }
     }
     return null;
   }

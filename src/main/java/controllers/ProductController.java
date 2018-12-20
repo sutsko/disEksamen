@@ -1,5 +1,6 @@
 package controllers;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,32 +66,48 @@ public class ProductController {
    */
   public static Product getProductBySku(String sku) {
 
-    // check for connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
-    }
-
-    // Build the SQL query for the DB
-    String sql = "SELECT * FROM product where sku='" + sku + "'";
-
-    // Run the query in the DB and declare an empty object to return
-    ResultSet rs = dbCon.query(sql);
-    Product product = null;
+    ResultSet rs = null;
 
     try {
-      // Get first row and initialize through formProduct() the object and return it
-      if (rs.next()) {
-        product = formProduct(rs);
-        return product;
-      } else {
-        System.out.println("No product found");
+      // check for connection
+      if (dbCon == null) {
+        dbCon = new DatabaseController();
       }
-    } catch (SQLException ex) {
-      System.out.println(ex.getMessage());
-    }
 
-    return product;
-  }
+      //Building SQL statement and executing query
+      String sql = "SELECT * FROM product where sku = ?";
+
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
+      preparedStatement.setString(1, sku);
+
+      rs = preparedStatement.executeQuery();
+
+      Product product = null;
+
+        // Get first row and initialize through formProduct() the object and return it
+        if (rs.next()) {
+          product = formProduct(rs);
+          return product;
+        } else {
+          System.out.println("No product found");
+        }
+    }catch (SQLException e){
+      e.printStackTrace();
+    }/** finally {
+      try {
+        rs.close();
+
+      } catch (SQLException h) {
+        h.printStackTrace();
+        try {
+          dbCon.getConnection().close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }*/
+    return null;
+    }
 
 
 

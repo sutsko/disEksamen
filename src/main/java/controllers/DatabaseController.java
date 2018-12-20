@@ -29,7 +29,7 @@ public class DatabaseController {
     try {
 
         //If there aren't a connection we create one - otherwise we return the one we have.
-        if (connection == null) {
+        if (connection == null || connection.isClosed()) {
             // Set the database connect with the data from the config
             String url =
                     "jdbc:mysql://"
@@ -112,7 +112,6 @@ public class DatabaseController {
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 return generatedKeys.getInt(1);
-
             }
         } catch (SQLException e){
             e.printStackTrace();

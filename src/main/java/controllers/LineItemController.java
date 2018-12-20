@@ -1,7 +1,9 @@
 package controllers;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import model.LineItem;
 import model.Product;
@@ -32,37 +34,38 @@ public class LineItemController {
     // Write in log that we've reach this step
     Log.writeLog(ProductController.class.getName(), lineItem, "Actually creating a line item in DB", 0);
 
-    // Check for DB Connection
-    if (dbCon == null) {
-      dbCon = new DatabaseController();
+    try {
+      // Check for DB Connection
+      if (dbCon == null) {
+        dbCon = new DatabaseController();
+      }
+
+      //Building SQL statement and executing query
+      String sql = "INSERT INTO line_item (product_id, order_id, l_price, quantity) VALUES(?,?,?,?)";
+
+      PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      preparedStatement.setInt(1, lineItem.getProduct().getId());
+      preparedStatement.setInt(2, orderID);
+      preparedStatement.setFloat(3, lineItem.getPrice());
+      preparedStatement.setInt(4, lineItem.getQuantity());
+
+      int rowsAffected = preparedStatement.executeUpdate();
+
+      // Get our key back in order to apply it to an object as ID
+      ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+      if (generatedKeys.next()&&rowsAffected==1) {
+        lineItem.setId(generatedKeys.getInt(1));
+        // Get the ID of the product, since the user will not send it to us.
+        lineItem.getProduct().setId(ProductController.getProductBySku(lineItem.getProduct().getSku()).getId());
+        return lineItem;
+      } else {
+        // Return null if line item has not been inserted into database
+        return null;
+      }
+    }catch (SQLException e){
+      e.printStackTrace();
     }
-
-    // Get the ID of the product, since the user will not send it to us.
-    lineItem.getProduct().setId(ProductController.getProductBySku(lineItem.getProduct().getSku()).getId());
-
-    // Update the ID of the product
-
-    // Insert the line item in the DB
-    int lineItemID = dbCon.insert(
-        "INSERT INTO line_item(product_id, order_id, l_price, quantity) VALUES("
-            + lineItem.getProduct().getId()
-            + ", "
-            + orderID
-            + ", "
-            + lineItem.getPrice()
-            + ", "
-            + lineItem.getQuantity()
-            + ")");
-
-    if (lineItemID != 0) {
-      //Update the line item id of the line item before returning
-      lineItem.setId(lineItemID);
-      return lineItem;
-
-    } else{
-      // Return null if line item has not been inserted into database
-      return null;
-    }
+    return null;
   }
 
 
