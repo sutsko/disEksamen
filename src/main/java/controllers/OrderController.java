@@ -45,7 +45,7 @@ public class OrderController {
       }
 
       //We set the autocommit to false, making the way to use transactions
-      DatabaseController.getConnection().setAutoCommit(false);
+      dbCon.getConnection().setAutoCommit(false);
 
       //Setting the IDs of billing- and shippingAddress to the order
       //in other words: Save addresses to database and save them back to initial order instance
@@ -88,7 +88,7 @@ public class OrderController {
 
         //Add line items to the order, commit and return the order
         order.setLineItems(items);
-        DatabaseController.getConnection().commit();
+        dbCon.getConnection().commit();
         return  order;
 
       // adding nullpointerexception, since we are using getUser() instead of createUser() - we would like people to be
@@ -99,7 +99,7 @@ public class OrderController {
         try {
           //If exception was catched, we roll our statements to the database back.
           System.out.println("rolling back");
-          DatabaseController.getConnection().rollback();
+          dbCon.getConnection().rollback();
         } catch (SQLException ex) {
           ex.printStackTrace();
         }

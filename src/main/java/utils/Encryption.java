@@ -26,6 +26,11 @@ public final class Encryption {
        * The binary value of the above is 0110 0001 and 0110 0010. Doing the XOR operation on these will give the binary value 0000 0011 which is = 3, when converted back.
        * The 3 is now our new value stored in the thisIsEncrypted variable for the rawString.charAt(i). This is then done for all characters as iterations in rawString.
        * The use of modulo ensures that even though our "i" surpassed the amount of characters in our key, we will still get a value from it to be XOR'ed with.
+       *
+       * Taget ud af rapporten: XOR-kryptering er valgt over andre former for kryptering grundet:
+       * -	 Dens hurtige beregning/omkonvertering, hvilket gør den ikke påvirker ydeevnen synderligt
+       * -	Antal og rækkefølge der XOR’es værdier er uvæsentligt, grundet muligheden for tilbageførsel via en dekrypteringsnøgle.
+       * -	Nemt at forstå og analysere.
       **/
       for (int i = 0; i < rawString.length(); i++) {
         thisIsEncrypted.append((char) (rawString.charAt(i) ^ keyyy[i % keyyy.length]));

@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
-import com.mysql.cj.xdevapi.SqlDataResult;
 import model.User;
 import utils.Log;
 import utils.Hashing;
@@ -38,11 +36,10 @@ public class UserController {
       dbCon = new DatabaseController();
     }
 
-    //Building SQL statement and executing query
+          //Building SQL statement and executing query
           String sql = "SELECT * FROM user where u_id = ?";
-    // Build the query for DB
+          // Build the query for DB
           PreparedStatement preparedStatement = dbCon.getConnection().prepareStatement(sql);
-
           preparedStatement.setInt(1, id);
 
 
@@ -60,12 +57,14 @@ public class UserController {
       }
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
-    } finally {
+    }
+      finally {
       try {
         rs.close();
-      } catch (SQLException h) {
+      }
+        catch (SQLException h) {
         h.printStackTrace();
-        try {
+          try {
           dbCon.getConnection().close();
 
         } catch (SQLException e) {
@@ -271,8 +270,8 @@ public class UserController {
       dbCon = new DatabaseController();
     }
 
-    //Hashing password
-    //user.setPassword(Hashing.sha(user.getPassword()));
+      //Hashing password
+      user.setPassword(Hashing.sha(user.getPassword()));
 
 
       //Building SQL statement and executing query
