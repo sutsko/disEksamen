@@ -174,8 +174,9 @@ public class UserController {
 
             // Get our key back in order to apply it to an object as ID
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            if (generatedKeys.next()&&affectedRows==1) {
+            if (generatedKeys.next() && affectedRows==1) {
               user.setId(generatedKeys.getInt(1));
+
               return user;
             } else {
               // Return null if user has not been inserted into database

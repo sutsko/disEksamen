@@ -204,6 +204,7 @@ public class UserEndpoints {
 
     //Setting a user from the information - note the changes to the user object - we have added token as a instance variable
     User userToUpdate = new Gson().fromJson(body, User.class);
+    userToUpdate.setId(idUser);
 
     //Writing log to let know we are here.
     Log.writeLog(this.getClass().getName(), this, "Updating a user", 0);
